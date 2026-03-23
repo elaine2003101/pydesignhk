@@ -24,6 +24,31 @@ import {
   updateIdeaStarterLead,
 } from "../lib/leadPipeline";
 
+type EstimateFormData = {
+  clientName: string;
+  clientEmail: string;
+  propertyType: PropertyType;
+  propertySize: string;
+  bedrooms: string;
+  bathrooms: string;
+  kitchens: string;
+  livingRooms: string;
+  scope: RenovationScope;
+  pricingTier: PricingTier;
+  style: StyleDirection;
+  addOns: string[];
+  projectBrief: string;
+};
+
+type EstimateFormErrors = Partial<
+  Record<
+    | keyof EstimateFormData
+    | "roomCount"
+    | "projectConfiguration",
+    string
+  >
+>;
+
 const addOnOptions = [
   { label: "Custom Carpentry", description: "Extra built-in storage or bespoke feature joinery" },
   { label: "Smart Home Integration", description: "Digital lock, smart switches, and app-linked controls" },
@@ -31,6 +56,13 @@ const addOnOptions = [
   { label: "Flooring Upgrade", description: "Upgrade to higher-grade tile or engineered wood finish" },
   { label: "Appliance Package", description: "Kitchen appliance and fitting allowance" },
 ];
+
+const roomFields = [
+  { key: "bedrooms", label: "Bedrooms" },
+  { key: "bathrooms", label: "Bathrooms" },
+  { key: "kitchens", label: "Kitchens" },
+  { key: "livingRooms", label: "Living Rooms" },
+] as const;
 
 function mapLeadStyleToDirection(style: string): StyleDirection {
   const normalized = style.toLowerCase();
@@ -65,10 +97,65 @@ function getCategoryTotal(category: BoqEstimate["categories"][number]) {
   return category.items.reduce((sum, item) => sum + item.total_cost, 0);
 }
 
+function getInputClassName(hasError: boolean) {
+  return `w-full px-4 py-3 border rounded-lg outline-none transition-all ${
+    hasError
+      ? "border-red-400 bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400"
+      : "border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+  }`;
+}
+
+function validateEstimateForm(formData: EstimateFormData): EstimateFormErrors {
+  const errors: EstimateFormErrors = {};
+
+  if (!formData.clientName.trim()) {
+    errors.clientName = "Client name is required.";
+  }
+
+  if (!formData.clientEmail.trim()) {
+    errors.clientEmail = "Client email is required.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.clientEmail.trim())) {
+    errors.clientEmail = "Enter a valid email address.";
+  }
+
+  if (!formData.projectBrief.trim()) {
+    errors.projectBrief = "Project brief is required.";
+  }
+
+  const areaSqFt = Number(formData.propertySize);
+  if (!formData.propertySize.trim()) {
+    errors.propertySize = "Saleable area is required.";
+  } else if (!Number.isFinite(areaSqFt) || areaSqFt <= 0) {
+    errors.propertySize = "Enter a valid saleable area.";
+  }
+
+  const roomCounts = roomFields.map(({ key }) => Number(formData[key]));
+  const invalidRoomCount = roomCounts.some(
+    (value) => !Number.isFinite(value) || value < 0 || !Number.isInteger(value),
+  );
+
+  if (invalidRoomCount) {
+    errors.roomCount = "Room counts must be whole numbers of 0 or above.";
+  } else if (roomCounts.reduce((sum, value) => sum + value, 0) === 0) {
+    errors.roomCount = "At least one room / area must be included.";
+  }
+
+  if (Number(formData.kitchens) === 0 && formData.scope === "kitchen") {
+    errors.projectConfiguration = "Kitchen count must be at least 1 for kitchen-only works.";
+  }
+
+  if (Number(formData.bathrooms) === 0 && formData.scope === "bathroom") {
+    errors.projectConfiguration = "Bathroom count must be at least 1 for bathroom-only works.";
+  }
+
+  return errors;
+}
+
 export function GetEstimate() {
   const [selectedLead, setSelectedLead] = useState<IdeaStarterLead | null>(null);
   const [estimate, setEstimate] = useState<BoqEstimate | null>(null);
-  const [formData, setFormData] = useState({
+  const [formErrors, setFormErrors] = useState<EstimateFormErrors>({});
+  const [formData, setFormData] = useState<EstimateFormData>({
     clientName: "",
     clientEmail: "",
     propertyType: "private-flat" as PropertyType,
@@ -83,6 +170,25 @@ export function GetEstimate() {
     addOns: [] as string[],
     projectBrief: "",
   });
+
+  const updateField = <K extends keyof EstimateFormData>(
+    key: K,
+    value: EstimateFormData[K],
+  ) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      if (key === "bedrooms" || key === "bathrooms" || key === "kitchens" || key === "livingRooms") {
+        delete next.roomCount;
+        delete next.projectConfiguration;
+      }
+      if (key === "scope") {
+        delete next.projectConfiguration;
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const queuedLead = consumeQueuedLeadForEstimate();
@@ -115,17 +221,14 @@ export function GetEstimate() {
   };
 
   const calculateEstimate = () => {
-    if (!formData.propertySize) {
-      toast.error("Please fill in the property size");
+    const errors = validateEstimateForm(formData);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      toast.error("Please complete the compulsory fields first.");
       return;
     }
 
     const areaSqFt = Number(formData.propertySize);
-    if (!Number.isFinite(areaSqFt) || areaSqFt <= 0) {
-      toast.error("Enter a valid property size");
-      return;
-    }
-
     const boq = generateBoqEstimate({
       propertyType: formData.propertyType,
       areaSqFt,
@@ -191,6 +294,9 @@ export function GetEstimate() {
             category-based BOQ logic, room counts, scope, finish tier, and
             project notes.
           </p>
+          <p className="mt-4 text-sm text-gray-500">
+            Compulsory fields are marked with <span className="text-red-500">*</span>
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8">
@@ -217,48 +323,51 @@ export function GetEstimate() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Client Name
+                    Client Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.clientName}
-                    onChange={(event) =>
-                      setFormData({ ...formData, clientName: event.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    onChange={(event) => updateField("clientName", event.target.value)}
+                    className={getInputClassName(Boolean(formErrors.clientName))}
                     placeholder="Client name"
                   />
+                  {formErrors.clientName && (
+                    <p className="mt-2 text-sm text-red-600">{formErrors.clientName}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Client Email
+                    Client Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     value={formData.clientEmail}
-                    onChange={(event) =>
-                      setFormData({ ...formData, clientEmail: event.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    onChange={(event) => updateField("clientEmail", event.target.value)}
+                    className={getInputClassName(Boolean(formErrors.clientEmail))}
                     placeholder="name@example.com"
                   />
+                  {formErrors.clientEmail && (
+                    <p className="mt-2 text-sm text-red-600">{formErrors.clientEmail}</p>
+                  )}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Project Brief
+                  Project Brief <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={4}
                   value={formData.projectBrief}
-                  onChange={(event) =>
-                    setFormData({ ...formData, projectBrief: event.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all resize-none"
+                  onChange={(event) => updateField("projectBrief", event.target.value)}
+                  className={`${getInputClassName(Boolean(formErrors.projectBrief))} resize-none`}
                   placeholder="Property condition, special needs, storage requests, management restrictions, or timeline"
                 />
+                {formErrors.projectBrief && (
+                  <p className="mt-2 text-sm text-red-600">{formErrors.projectBrief}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -269,12 +378,9 @@ export function GetEstimate() {
                   <select
                     value={formData.propertyType}
                     onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        propertyType: event.target.value as PropertyType,
-                      })
+                      updateField("propertyType", event.target.value as PropertyType)
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                    className={getInputClassName(false)}
                   >
                     <option value="private-flat">Private Flat</option>
                     <option value="hos">HOS / Subsidized Flat</option>
@@ -285,49 +391,50 @@ export function GetEstimate() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Saleable Area (sq ft)
+                    Saleable Area (sq ft) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     min="0"
                     value={formData.propertySize}
-                    onChange={(event) =>
-                      setFormData({ ...formData, propertySize: event.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    onChange={(event) => updateField("propertySize", event.target.value)}
+                    className={getInputClassName(Boolean(formErrors.propertySize))}
                     placeholder="e.g. 560"
                   />
+                  {formErrors.propertySize && (
+                    <p className="mt-2 text-sm text-red-600">{formErrors.propertySize}</p>
+                  )}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Room Count
+                  Room Count <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { key: "bedrooms", label: "Bedrooms" },
-                    { key: "bathrooms", label: "Bathrooms" },
-                    { key: "kitchens", label: "Kitchens" },
-                    { key: "livingRooms", label: "Living Rooms" },
-                  ].map((room) => (
+                  {roomFields.map((room) => (
                     <div key={room.key}>
                       <div className="text-sm text-gray-600 mb-2">{room.label}</div>
                       <input
                         type="number"
                         min="0"
-                        value={formData[room.key as keyof typeof formData] as string}
-                        onChange={(event) =>
-                          setFormData({
-                            ...formData,
-                            [room.key]: event.target.value,
-                          })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        value={formData[room.key]}
+                        onChange={(event) => updateField(room.key, event.target.value)}
+                        className={getInputClassName(
+                          Boolean(formErrors.roomCount || formErrors.projectConfiguration),
+                        )}
                       />
                     </div>
                   ))}
                 </div>
+                {formErrors.roomCount && (
+                  <p className="mt-2 text-sm text-red-600">{formErrors.roomCount}</p>
+                )}
+                {formErrors.projectConfiguration && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {formErrors.projectConfiguration}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -371,10 +478,7 @@ export function GetEstimate() {
                         value={scope.value}
                         checked={formData.scope === scope.value}
                         onChange={(event) =>
-                          setFormData({
-                            ...formData,
-                            scope: event.target.value as RenovationScope,
-                          })
+                          updateField("scope", event.target.value as RenovationScope)
                         }
                         className="mt-1"
                       />
