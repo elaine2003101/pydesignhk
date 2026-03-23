@@ -8,7 +8,6 @@ import {
   ArrowRight,
   CheckCircle,
 } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
 export function Home() {
   const features = [
@@ -187,7 +186,7 @@ export function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <ImageWithFallback
+              <img
                 src="https://images.unsplash.com/photo-1696861270495-7f35c35c3273?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFuc3BhcmVudCUyMGJ1c2luZXNzJTIwaGFuZHNoYWtlJTIwdHJ1c3R8ZW58MXx8fHwxNzc0MTA2NjQzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
                 alt="Transparent business"
                 className="w-full h-[500px] object-cover"
