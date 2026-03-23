@@ -5,6 +5,7 @@ import { Inspiration } from "./pages/Inspiration";
 import { GetEstimate } from "./pages/GetEstimate";
 import { TrackProject } from "./pages/TrackProject";
 import { Login } from "./pages/Login";
+import { Signup } from "./pages/Signup";
 import { AdminPanel } from "./pages/AdminPanel";
 
 export const router = createHashRouter([
@@ -17,6 +18,7 @@ export const router = createHashRouter([
       { path: "estimate", Component: GetEstimate },
       { path: "track", Component: TrackProject },
       { path: "login", Component: Login },
+      { path: "signup", Component: Signup },
       { path: "admin", Component: AdminPanel },
     ],
   },

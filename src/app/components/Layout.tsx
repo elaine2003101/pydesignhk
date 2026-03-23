@@ -1,22 +1,53 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { Menu, X, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  AppUser,
+  getCurrentAppUser,
+  mapSupabaseUser,
+  signOutUser,
+} from "../lib/auth";
+import { supabase } from "../lib/supabase";
 
 export function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+    let isMounted = true;
+
+    getCurrentAppUser().then((currentUser) => {
+      if (isMounted) {
+        setUser(currentUser);
+      }
+    });
+
+    if (!supabase) {
+      return () => {
+        isMounted = false;
+      };
     }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) {
+        return;
+      }
+
+      setUser(mapSupabaseUser(session?.user ?? null));
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [location]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    await signOutUser();
     setUser(null);
     navigate("/");
   };

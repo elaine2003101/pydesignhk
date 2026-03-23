@@ -2,43 +2,47 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LogIn, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { getUserRole } from "../lib/auth";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
 
 export function Login() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Demo credentials
-    const demoUsers = [
-      { email: "customer@demo.com", password: "customer123", role: "customer" },
-      { email: "admin@demo.com", password: "admin123", role: "admin" },
-    ];
-
-    const user = demoUsers.find(
-      (u) =>
-        u.email === formData.email && u.password === formData.password
-    );
-
-    if (user) {
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ email: user.email, role: user.role })
-      );
-      toast.success("Login successful!");
-      
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/track");
-      }
-    } else {
-      toast.error("Invalid email or password");
+    if (!isSupabaseConfigured || !supabase) {
+      toast.error("Supabase is not configured yet. Add your env keys first.");
+      return;
     }
+
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Login successful!");
+
+    if (getUserRole(data.user) === "admin") {
+      navigate("/admin");
+      return;
+    }
+
+    navigate("/track");
   };
 
   return (
@@ -58,6 +62,13 @@ export function Login() {
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
+          {!isSupabaseConfigured && (
+            <div className="mb-6 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258]">
+              Supabase keys are not configured yet. Add `VITE_SUPABASE_URL` and
+              `VITE_SUPABASE_ANON_KEY` to enable real signup and login.
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
             <div>
@@ -118,40 +129,17 @@ export function Login() {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 transition-colors"
             >
               <LogIn className="w-5 h-5" />
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              Demo Credentials
-            </h3>
-            <div className="space-y-3">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <div className="text-sm font-medium text-blue-900 mb-1">
-                  Customer Account
-                </div>
-                <div className="text-xs text-blue-700">
-                  Email: customer@demo.com
-                </div>
-                <div className="text-xs text-blue-700">
-                  Password: customer123
-                </div>
-              </div>
-              <div className="p-3 bg-[#EFE9E3] rounded-lg border border-[#D9CFC7]">
-                <div className="text-sm font-medium text-[#4F4338] mb-1">
-                  Admin Account
-                </div>
-                <div className="text-xs text-[#7A6751]">
-                  Email: admin@demo.com
-                </div>
-                <div className="text-xs text-[#7A6751]">Password: admin123</div>
-              </div>
-            </div>
+          <div className="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-600">
+            Email/password login is now backed by Supabase Auth once your
+            environment keys are configured.
           </div>
         </div>
 
@@ -160,10 +148,10 @@ export function Login() {
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
             <button
-              onClick={() => toast.info("Registration coming soon!")}
+              onClick={() => navigate("/signup")}
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              Contact us
+              Create one
             </button>
           </p>
         </div>

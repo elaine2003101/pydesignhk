@@ -12,6 +12,7 @@ import {
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AppUser, getCurrentAppUser } from "../lib/auth";
 import {
   getIdeaStarterLeads,
   getLeadDestinationSettings,
@@ -34,7 +35,7 @@ interface Project {
 
 export function AdminPanel() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [activeTab, setActiveTab] = useState<
     "projects" | "pricing" | "updates" | "leads"
   >("projects");
@@ -80,20 +81,22 @@ export function AdminPanel() {
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/login");
-      return;
-    }
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "admin") {
-      toast.error("Access denied. Admin privileges required.");
-      navigate("/");
-      return;
-    }
-    setUser(parsedUser);
-    setLeads(getIdeaStarterLeads());
-    setLeadSettings(getLeadDestinationSettings());
+    getCurrentAppUser().then((currentUser) => {
+      if (!currentUser) {
+        navigate("/login");
+        return;
+      }
+
+      if (currentUser.role !== "admin") {
+        toast.error("Access denied. Admin privileges required.");
+        navigate("/");
+        return;
+      }
+
+      setUser(currentUser);
+      setLeads(getIdeaStarterLeads());
+      setLeadSettings(getLeadDestinationSettings());
+    });
   }, [navigate]);
 
   const handleUpdateProject = (projectId: string, field: string, value: any) => {

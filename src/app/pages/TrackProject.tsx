@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { AppUser, getCurrentAppUser } from "../lib/auth";
 
 interface Project {
   id: string;
@@ -35,7 +36,7 @@ interface Project {
 
 export function TrackProject() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   
   // Mock project data
   const [project] = useState<Project>({
@@ -105,12 +106,14 @@ export function TrackProject() {
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/login");
-      return;
-    }
-    setUser(JSON.parse(userData));
+    getCurrentAppUser().then((currentUser) => {
+      if (!currentUser) {
+        navigate("/login");
+        return;
+      }
+
+      setUser(currentUser);
+    });
   }, [navigate]);
 
   if (!user) {
