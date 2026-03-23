@@ -3,8 +3,8 @@ import { Menu, X, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
   AppUser,
+  getAppUserFromSupabaseUser,
   getCurrentAppUser,
-  mapSupabaseUser,
   signOutUser,
 } from "../lib/auth";
 import { supabase } from "../lib/supabase";
@@ -33,11 +33,13 @@ export function Layout() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) {
-        return;
-      }
+      getAppUserFromSupabaseUser(session?.user ?? null).then((appUser) => {
+        if (!isMounted) {
+          return;
+        }
 
-      setUser(mapSupabaseUser(session?.user ?? null));
+        setUser(appUser);
+      });
     });
 
     return () => {

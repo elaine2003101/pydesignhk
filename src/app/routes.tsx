@@ -6,6 +6,9 @@ import { GetEstimate } from "./pages/GetEstimate";
 import { TrackProject } from "./pages/TrackProject";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
+import { AuthCallback } from "./pages/AuthCallback";
 import { AdminPanel } from "./pages/AdminPanel";
 
 export const router = createHashRouter([
@@ -19,6 +22,9 @@ export const router = createHashRouter([
       { path: "track", Component: TrackProject },
       { path: "login", Component: Login },
       { path: "signup", Component: Signup },
+      { path: "forgot-password", Component: ForgotPassword },
+      { path: "reset-password", Component: ResetPassword },
+      { path: "auth/callback", Component: AuthCallback },
       { path: "admin", Component: AdminPanel },
     ],
   },

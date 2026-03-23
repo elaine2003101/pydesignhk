@@ -5,6 +5,12 @@ export interface AppUser {
   id: string;
   email: string;
   role: "customer" | "admin";
+  fullName?: string | null;
+}
+
+interface ProfileRow {
+  full_name: string | null;
+  role: "customer" | "admin" | null;
 }
 
 function getAdminEmails() {
@@ -44,6 +50,34 @@ export function mapSupabaseUser(user: User | null): AppUser | null {
     id: user.id,
     email: user.email,
     role: getUserRole(user),
+    fullName:
+      typeof user.user_metadata?.full_name === "string"
+        ? user.user_metadata.full_name
+        : null,
+  };
+}
+
+export async function getAppUserFromSupabaseUser(user: User | null) {
+  const mappedUser = mapSupabaseUser(user);
+
+  if (!mappedUser || !supabase) {
+    return mappedUser;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, role")
+    .eq("id", mappedUser.id)
+    .maybeSingle<ProfileRow>();
+
+  if (!profile) {
+    return mappedUser;
+  }
+
+  return {
+    ...mappedUser,
+    role: profile.role ?? mappedUser.role,
+    fullName: profile.full_name ?? mappedUser.fullName,
   };
 }
 
@@ -56,7 +90,7 @@ export async function getCurrentAppUser() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return mapSupabaseUser(user);
+  return getAppUserFromSupabaseUser(user);
 }
 
 export async function signOutUser() {

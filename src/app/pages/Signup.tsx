@@ -2,11 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Lock, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import {
+  getHashRedirectUrl,
+  isSupabaseConfigured,
+  supabase,
+} from "../lib/supabase";
 
 export function Signup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -42,7 +48,7 @@ export function Signup() {
           full_name: formData.fullName,
           role: "customer",
         },
-        emailRedirectTo: window.location.origin + window.location.pathname,
+        emailRedirectTo: getHashRedirectUrl("/auth/callback?mode=signup"),
       },
     });
 
@@ -56,7 +62,32 @@ export function Signup() {
     toast.success(
       "Account created. Check your email if confirmation is enabled in Supabase.",
     );
-    navigate("/login");
+    setPendingEmail(formData.email);
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!supabase || !pendingEmail) {
+      return;
+    }
+
+    setResendLoading(true);
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: pendingEmail,
+      options: {
+        emailRedirectTo: getHashRedirectUrl("/auth/callback?mode=signup"),
+      },
+    });
+
+    setResendLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Confirmation email sent again.");
   };
 
   return (
@@ -179,6 +210,26 @@ export function Signup() {
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
+
+          {pendingEmail && (
+            <div className="mt-8 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258]">
+              <div className="font-medium text-[#4F4338] mb-2">
+                Check your inbox
+              </div>
+              <div className="mb-3">
+                We sent a confirmation link to `{pendingEmail}`. Open it to
+                activate the account.
+              </div>
+              <button
+                type="button"
+                onClick={handleResendConfirmation}
+                disabled={resendLoading}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                {resendLoading ? "Sending..." : "Resend confirmation email"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -2,12 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LogIn, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { getUserRole } from "../lib/auth";
-import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { getAppUserFromSupabaseUser } from "../lib/auth";
+import {
+  getHashRedirectUrl,
+  isSupabaseConfigured,
+  supabase,
+} from "../lib/supabase";
 
 export function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,12 +42,45 @@ export function Login() {
 
     toast.success("Login successful!");
 
-    if (getUserRole(data.user) === "admin") {
+    const appUser = await getAppUserFromSupabaseUser(data.user);
+
+    if (appUser?.role === "admin") {
       navigate("/admin");
       return;
     }
 
     navigate("/track");
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      toast.error("Supabase is not configured yet.");
+      return;
+    }
+
+    if (!formData.email) {
+      toast.error("Enter your email first");
+      return;
+    }
+
+    setResendLoading(true);
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: formData.email,
+      options: {
+        emailRedirectTo: getHashRedirectUrl("/auth/callback?mode=signup"),
+      },
+    });
+
+    setResendLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Confirmation email sent again.");
   };
 
   return (
@@ -140,6 +178,23 @@ export function Login() {
           <div className="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-600">
             Email/password login is now backed by Supabase Auth once your
             environment keys are configured.
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleResendConfirmation}
+                disabled={resendLoading}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                {resendLoading ? "Sending..." : "Resend confirmation email"}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Forgot password?
+              </button>
+            </div>
           </div>
         </div>
 
