@@ -34,6 +34,9 @@ const styleOptions = [
   { id: "calm", label: "Calm Minimal" },
   { id: "warm", label: "Warm Modern" },
   { id: "smart", label: "Storage-Focused" },
+  { id: "japandi", label: "Japandi Soft" },
+  { id: "luxury", label: "Boutique Luxury" },
+  { id: "contrast", label: "Dark Contrast" },
 ];
 
 const presetMoodboards = [
@@ -52,6 +55,20 @@ const presetMoodboards = [
     palette: ["#F3EFE9", "#D6CEC2", "#A89582", "#5D6B68"],
   },
   {
+    id: "gallery-japandi",
+    room: "living-room",
+    style: "japandi",
+    title: "Gallery Japandi",
+    fit: "Living Room · Japandi Soft",
+    description:
+      "A quieter living room with sculptural furniture, lighter oak, and negative space for homeowners who want a calm, editorial feel.",
+    image:
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    materials: ["White-oak storage wall", "Soft boucle seating", "Calm limewash paint", "Paper lantern lighting"],
+    tags: ["Japandi sofa", "Low console", "Natural oak", "Sculptural lamp"],
+    palette: ["#F7F2EB", "#DDD2C3", "#BFA78F", "#6E655C"],
+  },
+  {
     id: "modern-harvest",
     room: "kitchen",
     style: "warm",
@@ -64,6 +81,20 @@ const presetMoodboards = [
     materials: ["Oak cabinetry", "Travertine-look top", "Muted brass accents", "Layered task lights"],
     tags: ["Stone backsplash", "Wood island", "Warm pendants", "Integrated storage"],
     palette: ["#EEE3D3", "#C7AA86", "#8A6A4A", "#43413B"],
+  },
+  {
+    id: "shadow-line",
+    room: "kitchen",
+    style: "contrast",
+    title: "Shadow Line",
+    fit: "Kitchen · Dark Contrast",
+    description:
+      "A sharper kitchen board with charcoal joinery, warm stone, and bold task lighting for clients who want a more dramatic statement.",
+    image:
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+    materials: ["Charcoal cabinetry", "Stone waterfall counter", "Smoked glass accents", "Linear black lighting"],
+    tags: ["Dark island", "Shadow gap", "Stone slab", "Contrast hardware"],
+    palette: ["#F1ECE6", "#B9A89A", "#6E5C50", "#232426"],
   },
   {
     id: "smart-retreat",
@@ -80,6 +111,20 @@ const presetMoodboards = [
     palette: ["#F4F1EC", "#D8D2C8", "#8F8477", "#38414A"],
   },
   {
+    id: "suite-luxe",
+    room: "bedroom",
+    style: "luxury",
+    title: "Suite Luxe",
+    fit: "Bedroom · Boutique Luxury",
+    description:
+      "A richer master-bedroom board with deeper tones, upholstered panels, and hotel-inspired detailing for clients chasing a premium finish.",
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&contrast=20",
+    materials: ["Fluted feature wall", "Bronze details", "Layered drapery", "Upholstered headboard"],
+    tags: ["Hotel bed", "Bronze trim", "Feature joinery", "Ambient lamps"],
+    palette: ["#EFE8E1", "#CDB8A2", "#8A6A55", "#332C29"],
+  },
+  {
     id: "spa-reset",
     room: "bathroom",
     style: "calm",
@@ -92,6 +137,20 @@ const presetMoodboards = [
     materials: ["Stone-look wall tiles", "Matte black hardware", "Floating vanity", "Backlit mirror"],
     tags: ["Wall-hung vanity", "Large-format tile", "Soft beige", "Mirror lighting"],
     palette: ["#F2ECE5", "#D8CDC1", "#A58E79", "#2F3135"],
+  },
+  {
+    id: "marble-glow",
+    room: "bathroom",
+    style: "luxury",
+    title: "Marble Glow",
+    fit: "Bathroom · Boutique Luxury",
+    description:
+      "An elevated bathroom concept with warmer stone, brushed brass, and mirror lighting aimed at clients who want a more premium boutique-hotel feel.",
+    image:
+      "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
+    materials: ["Bookmatched-look slab", "Brushed brass fittings", "Custom vanity", "Integrated shelf lighting"],
+    tags: ["Warm marble", "Brass mixer", "Backlit mirror", "Hotel vanity"],
+    palette: ["#F6F0EA", "#DCC7B4", "#AF8F75", "#5F4B40"],
   },
 ];
 
@@ -271,6 +330,10 @@ export function Inspiration() {
       boards: presetMoodboards.filter((moodboard) => moodboard.room === room.id),
     }))
     .filter((group) => group.boards.length > 0);
+  const matchedMoodboards = presetMoodboards.filter(
+    (moodboard) =>
+      moodboard.room === selectedRoom || moodboard.style === selectedStyle,
+  );
 
   const openLeadCapture = () => {
     document.getElementById("lead-capture")?.scrollIntoView({
@@ -530,6 +593,42 @@ export function Inspiration() {
             <p className="text-lg text-gray-600">
               Yes, you can pre-set mood boards already. These act as starter directions for visitors who want inspiration before discussing scope or budget in detail.
             </p>
+          </div>
+
+          <div className="mb-10 rounded-[2rem] border border-[#D9CFC7] bg-white/80 p-6 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="px-3 py-1 rounded-full bg-[#EFE9E3] text-[#7A6751] text-sm">
+                Suggested for your current filters
+              </span>
+              <span className="text-sm text-gray-500">
+                {selectedRoomLabel} · {selectedStyleLabel}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {matchedMoodboards.slice(0, 3).map((moodboard) => (
+                <button
+                  key={moodboard.id}
+                  type="button"
+                  onClick={() => handleUseMoodboard(moodboard)}
+                  className="group text-left rounded-[1.5rem] overflow-hidden border border-[#E6DDD5] bg-[#F9F8F6] hover:border-[#C9B59C] transition-all"
+                >
+                  <div className="h-40 overflow-hidden">
+                    <img
+                      src={moodboard.image}
+                      alt={moodboard.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
+                      {moodboard.fit}
+                    </div>
+                    <div className="text-xl text-gray-900 mb-2">{moodboard.title}</div>
+                    <div className="text-sm text-gray-600">{moodboard.tags.slice(0, 3).join(" · ")}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-12">
