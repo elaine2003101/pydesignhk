@@ -6,6 +6,7 @@ import {
   FileText,
   DollarSign,
   AlertCircle,
+  Calendar,
   CheckCircle,
   Image as ImageIcon,
   Users,
