@@ -206,6 +206,14 @@
     animation: reveal-up 0.8s ease-out both;
   }
 
+  .animate-slow-zoom {
+    animation: slow-zoom 9s ease-in-out infinite alternate;
+  }
+
+  .animate-carousel-progress {
+    animation: carousel-progress 5.2s linear forwards;
+  }
+
   .animation-delay-150 {
     animation-delay: 0.15s;
   }
@@ -382,5 +390,25 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slow-zoom {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes carousel-progress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
   }
 }

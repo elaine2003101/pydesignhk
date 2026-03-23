@@ -40,6 +40,26 @@ const styleOptions = [
   { id: "contrast", label: "Dark Contrast" },
 ];
 
+// Replace these URLs later with your own project photos, renders, or portfolio images.
+const MOODBOARD_IMAGE_LIBRARY = {
+  urbanCalm:
+    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+  galleryJapandi:
+    "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+  modernHarvest:
+    "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
+  shadowLine:
+    "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+  smartRetreat:
+    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&sat=-15",
+  suiteLuxe:
+    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&contrast=20",
+  spaReset:
+    "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=1200&q=80",
+  marbleGlow:
+    "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
+} as const;
+
 const presetMoodboards = [
   {
     id: "urban-calm",
@@ -49,11 +69,15 @@ const presetMoodboards = [
     fit: "Living Room · Calm Minimal",
     description:
       "Soft stone, warm white, ash wood, and low-contrast styling for homeowners who want the space to feel brighter and less busy.",
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+    image: MOODBOARD_IMAGE_LIBRARY.urbanCalm,
     materials: ["Warm white walls", "Ash wood joinery", "Linen textures", "Soft ambient lighting"],
     tags: ["Curved sofa", "Open shelving", "Oak veneer", "Textured rug"],
-    palette: ["#F3EFE9", "#D6CEC2", "#A89582", "#5D6B68"],
+    swatches: [
+      { label: "Wall", color: "#F3EFE9" },
+      { label: "Joinery", color: "#D6CEC2" },
+      { label: "Fabric", color: "#A89582" },
+      { label: "Accent", color: "#5D6B68" },
+    ],
   },
   {
     id: "gallery-japandi",
@@ -63,11 +87,15 @@ const presetMoodboards = [
     fit: "Living Room · Japandi Soft",
     description:
       "A quieter living room with sculptural furniture, lighter oak, and negative space for homeowners who want a calm, editorial feel.",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    image: MOODBOARD_IMAGE_LIBRARY.galleryJapandi,
     materials: ["White-oak storage wall", "Soft boucle seating", "Calm limewash paint", "Paper lantern lighting"],
     tags: ["Japandi sofa", "Low console", "Natural oak", "Sculptural lamp"],
-    palette: ["#F7F2EB", "#DDD2C3", "#BFA78F", "#6E655C"],
+    swatches: [
+      { label: "Plaster", color: "#F7F2EB" },
+      { label: "Oak", color: "#DDD2C3" },
+      { label: "Textile", color: "#BFA78F" },
+      { label: "Outline", color: "#6E655C" },
+    ],
   },
   {
     id: "modern-harvest",
@@ -77,11 +105,15 @@ const presetMoodboards = [
     fit: "Kitchen · Warm Modern",
     description:
       "A richer kitchen direction using oak tones, stone-look surfaces, and muted brass accents to feel premium without going too dark.",
-    image:
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
+    image: MOODBOARD_IMAGE_LIBRARY.modernHarvest,
     materials: ["Oak cabinetry", "Travertine-look top", "Muted brass accents", "Layered task lights"],
     tags: ["Stone backsplash", "Wood island", "Warm pendants", "Integrated storage"],
-    palette: ["#EEE3D3", "#C7AA86", "#8A6A4A", "#43413B"],
+    swatches: [
+      { label: "Stone", color: "#EEE3D3" },
+      { label: "Oak", color: "#C7AA86" },
+      { label: "Timber", color: "#8A6A4A" },
+      { label: "Hardware", color: "#43413B" },
+    ],
   },
   {
     id: "shadow-line",
@@ -91,11 +123,15 @@ const presetMoodboards = [
     fit: "Kitchen · Dark Contrast",
     description:
       "A sharper kitchen board with charcoal joinery, warm stone, and bold task lighting for clients who want a more dramatic statement.",
-    image:
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+    image: MOODBOARD_IMAGE_LIBRARY.shadowLine,
     materials: ["Charcoal cabinetry", "Stone waterfall counter", "Smoked glass accents", "Linear black lighting"],
     tags: ["Dark island", "Shadow gap", "Stone slab", "Contrast hardware"],
-    palette: ["#F1ECE6", "#B9A89A", "#6E5C50", "#232426"],
+    swatches: [
+      { label: "Stone", color: "#F1ECE6" },
+      { label: "Taupe", color: "#B9A89A" },
+      { label: "Joinery", color: "#6E5C50" },
+      { label: "Steel", color: "#232426" },
+    ],
   },
   {
     id: "smart-retreat",
@@ -105,11 +141,15 @@ const presetMoodboards = [
     fit: "Bedroom · Storage-Focused",
     description:
       "A bedroom board built around hidden storage, cleaner lines, and softer lighting for smaller homes that still need to feel restful.",
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&sat=-15",
+    image: MOODBOARD_IMAGE_LIBRARY.smartRetreat,
     materials: ["Full-height wardrobes", "Fabric headboard wall", "Concealed storage", "Warm cove lighting"],
     tags: ["Built-in wardrobe", "Platform bed", "Soft taupe", "Concealed handles"],
-    palette: ["#F4F1EC", "#D8D2C8", "#8F8477", "#38414A"],
+    swatches: [
+      { label: "Wall", color: "#F4F1EC" },
+      { label: "Wardrobe", color: "#D8D2C8" },
+      { label: "Upholstery", color: "#8F8477" },
+      { label: "Accent", color: "#38414A" },
+    ],
   },
   {
     id: "suite-luxe",
@@ -119,11 +159,15 @@ const presetMoodboards = [
     fit: "Bedroom · Boutique Luxury",
     description:
       "A richer master-bedroom board with deeper tones, upholstered panels, and hotel-inspired detailing for clients chasing a premium finish.",
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&contrast=20",
+    image: MOODBOARD_IMAGE_LIBRARY.suiteLuxe,
     materials: ["Fluted feature wall", "Bronze details", "Layered drapery", "Upholstered headboard"],
     tags: ["Hotel bed", "Bronze trim", "Feature joinery", "Ambient lamps"],
-    palette: ["#EFE8E1", "#CDB8A2", "#8A6A55", "#332C29"],
+    swatches: [
+      { label: "Plaster", color: "#EFE8E1" },
+      { label: "Leather", color: "#CDB8A2" },
+      { label: "Timber", color: "#8A6A55" },
+      { label: "Bronze", color: "#332C29" },
+    ],
   },
   {
     id: "spa-reset",
@@ -133,11 +177,15 @@ const presetMoodboards = [
     fit: "Bathroom · Calm Minimal",
     description:
       "A cleaner bathroom direction with stone tones, subtle contrast, and hotel-inspired detailing for small spaces that need to feel more premium.",
-    image:
-      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=1200&q=80",
+    image: MOODBOARD_IMAGE_LIBRARY.spaReset,
     materials: ["Stone-look wall tiles", "Matte black hardware", "Floating vanity", "Backlit mirror"],
     tags: ["Wall-hung vanity", "Large-format tile", "Soft beige", "Mirror lighting"],
-    palette: ["#F2ECE5", "#D8CDC1", "#A58E79", "#2F3135"],
+    swatches: [
+      { label: "Tile", color: "#F2ECE5" },
+      { label: "Vanity", color: "#D8CDC1" },
+      { label: "Stone", color: "#A58E79" },
+      { label: "Metal", color: "#2F3135" },
+    ],
   },
   {
     id: "marble-glow",
@@ -147,11 +195,15 @@ const presetMoodboards = [
     fit: "Bathroom · Boutique Luxury",
     description:
       "An elevated bathroom concept with warmer stone, brushed brass, and mirror lighting aimed at clients who want a more premium boutique-hotel feel.",
-    image:
-      "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
+    image: MOODBOARD_IMAGE_LIBRARY.marbleGlow,
     materials: ["Bookmatched-look slab", "Brushed brass fittings", "Custom vanity", "Integrated shelf lighting"],
     tags: ["Warm marble", "Brass mixer", "Backlit mirror", "Hotel vanity"],
-    palette: ["#F6F0EA", "#DCC7B4", "#AF8F75", "#5F4B40"],
+    swatches: [
+      { label: "Marble", color: "#F6F0EA" },
+      { label: "Vanity", color: "#DCC7B4" },
+      { label: "Stone", color: "#AF8F75" },
+      { label: "Brass", color: "#5F4B40" },
+    ],
   },
 ];
 
@@ -351,6 +403,18 @@ export function Inspiration() {
   useEffect(() => {
     setCarouselIndex(0);
   }, [selectedRoom, selectedStyle]);
+
+  useEffect(() => {
+    if (carouselBoards.length <= 1) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCarouselIndex((current) => (current + 1) % carouselBoards.length);
+    }, 5200);
+
+    return () => window.clearInterval(intervalId);
+  }, [carouselBoards.length, selectedRoom, selectedStyle]);
 
   const openLeadCapture = () => {
     document.getElementById("lead-capture")?.scrollIntoView({
@@ -660,11 +724,14 @@ export function Inspiration() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-6">
-              <div className="overflow-hidden rounded-[2rem] border border-[#E6DDD5] bg-[#F9F8F6]">
+              <div
+                key={currentCarouselBoard.id}
+                className="overflow-hidden rounded-[2rem] border border-[#E6DDD5] bg-[#F9F8F6] shadow-[0_24px_70px_rgba(76,61,46,0.08)] animate-reveal-up"
+              >
                 <img
                   src={currentCarouselBoard.image}
                   alt={currentCarouselBoard.title}
-                  className="h-[360px] w-full object-cover"
+                  className="h-[360px] w-full object-cover animate-slow-zoom"
                 />
                 <div className="p-6">
                   <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
@@ -694,26 +761,36 @@ export function Inspiration() {
                     Use This Board
                     <ArrowRight className="w-4 h-4" />
                   </button>
+
+                  <div className="mt-6 h-1.5 rounded-full bg-[#EFE9E3] overflow-hidden">
+                    <div
+                      key={currentCarouselBoard.id}
+                      className="h-full rounded-full bg-[#8F775C] animate-carousel-progress"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="rounded-[2rem] border border-[#E6DDD5] bg-white p-6">
+              <div
+                key={`${currentCarouselBoard.id}-swatches`}
+                className="rounded-[2rem] border border-[#E6DDD5] bg-white p-6 animate-reveal-up"
+              >
                 <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-4">
                   Colour codes inside this board
                 </div>
                 <div className="space-y-3 mb-8">
-                  {currentCarouselBoard.palette.map((color) => (
+                  {currentCarouselBoard.swatches.map((swatch) => (
                     <div
-                      key={color}
-                      className="flex items-center gap-4 rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] p-3"
+                      key={`${currentCarouselBoard.id}-${swatch.label}`}
+                      className="flex items-center gap-4 rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] p-3 hover:-translate-y-0.5 transition-transform"
                     >
                       <div
                         className="h-12 w-12 rounded-2xl border border-black/5"
-                        style={{ backgroundColor: color }}
+                        style={{ backgroundColor: swatch.color }}
                       />
                       <div>
-                        <div className="text-sm text-gray-500">Palette code</div>
-                        <div className="text-lg text-gray-900">{color}</div>
+                        <div className="text-sm text-gray-500">{swatch.label}</div>
+                        <div className="text-lg text-gray-900">{swatch.color}</div>
                       </div>
                     </div>
                   ))}
@@ -780,11 +857,11 @@ export function Inspiration() {
                         </p>
 
                         <div className="flex gap-2 mb-5">
-                          {moodboard.palette.map((color) => (
+                          {moodboard.swatches.map((swatch) => (
                             <div
-                              key={color}
+                              key={`${moodboard.id}-${swatch.label}`}
                               className="h-12 flex-1 rounded-2xl border border-black/5"
-                              style={{ backgroundColor: color }}
+                              style={{ backgroundColor: swatch.color }}
                             />
                           ))}
                         </div>
