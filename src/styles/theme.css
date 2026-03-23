@@ -2,43 +2,43 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
+  --background: #F9F8F6;
   --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
+  --card: #F9F8F6;
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: #F9F8F6;
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
+  --primary: #C9B59C;
+  --primary-foreground: #4F4338;
+  --secondary: #EFE9E3;
+  --secondary-foreground: #4F4338;
+  --muted: #EFE9E3;
+  --muted-foreground: #7A6A5C;
+  --accent: #D9CFC7;
+  --accent-foreground: #4F4338;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
+  --border: rgba(111, 93, 73, 0.14);
   --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --input-background: #F9F8F6;
+  --switch-background: #D9CFC7;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
+  --ring: #C9B59C;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: #F9F8F6;
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-primary: #C9B59C;
+  --sidebar-primary-foreground: #4F4338;
+  --sidebar-accent: #EFE9E3;
+  --sidebar-accent-foreground: #4F4338;
+  --sidebar-border: rgba(111, 93, 73, 0.14);
+  --sidebar-ring: #C9B59C;
 }
 
 .dark {
@@ -177,5 +177,126 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+
+  body {
+    background-color: #F9F8F6;
+  }
+}
+
+@layer utilities {
+  .bg-blue-50 {
+    background-color: #F9F8F6 !important;
+  }
+
+  .bg-blue-100 {
+    background-color: #EFE9E3 !important;
+  }
+
+  .bg-blue-600 {
+    background-color: #8F775C !important;
+  }
+
+  .bg-blue-700 {
+    background-color: #7A6751 !important;
+  }
+
+  .bg-blue-800 {
+    background-color: #5F5144 !important;
+  }
+
+  .text-blue-100 {
+    color: #F9F8F6 !important;
+  }
+
+  .text-blue-600 {
+    color: #8F775C !important;
+  }
+
+  .text-blue-700 {
+    color: #7A6751 !important;
+  }
+
+  .text-blue-900 {
+    color: #4F4338 !important;
+  }
+
+  .border-blue-100 {
+    border-color: #EFE9E3 !important;
+  }
+
+  .border-blue-300 {
+    border-color: #D9CFC7 !important;
+  }
+
+  .border-blue-600 {
+    border-color: #C9B59C !important;
+  }
+
+  .from-blue-600 {
+    --tw-gradient-from: #8F775C var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: rgb(143 119 92 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+
+  .via-blue-700 {
+    --tw-gradient-to: rgb(122 103 81 / 0) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), #7A6751 var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+  }
+
+  .to-blue-50 {
+    --tw-gradient-to: #EFE9E3 var(--tw-gradient-to-position) !important;
+  }
+
+  .to-blue-300 {
+    --tw-gradient-to: #D9CFC7 var(--tw-gradient-to-position) !important;
+  }
+
+  .to-blue-400 {
+    --tw-gradient-to: #C9B59C var(--tw-gradient-to-position) !important;
+  }
+
+  .to-blue-800 {
+    --tw-gradient-to: #5F5144 var(--tw-gradient-to-position) !important;
+  }
+
+  .to-blue-900 {
+    --tw-gradient-to: #4F4338 var(--tw-gradient-to-position) !important;
+  }
+
+  .hover\:bg-blue-700:hover {
+    background-color: #7A6751 !important;
+  }
+
+  .hover\:bg-blue-800:hover {
+    background-color: #5F5144 !important;
+  }
+
+  .hover\:text-blue-600:hover {
+    color: #8F775C !important;
+  }
+
+  .hover\:text-blue-700:hover {
+    color: #7A6751 !important;
+  }
+
+  .hover\:border-blue-200:hover {
+    border-color: #D9CFC7 !important;
+  }
+
+  .hover\:border-blue-300:hover {
+    border-color: #C9B59C !important;
+  }
+
+  .hover\:border-blue-500:hover {
+    border-color: #8F775C !important;
+  }
+
+  .focus\:border-blue-600:focus {
+    border-color: #8F775C !important;
+  }
+
+  .focus\:ring-blue-600:focus {
+    --tw-ring-color: #C9B59C !important;
   }
 }

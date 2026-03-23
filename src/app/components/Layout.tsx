@@ -36,16 +36,16 @@ export function Layout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-[#F9F8F6]">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
+      <header className="bg-[#F9F8F6] border-b border-[#E6DDD5] sticky top-0 z-50 shadow-sm">
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-xl">PY</span>
+                <div className="w-10 h-10 bg-gradient-to-br from-[#C9B59C] to-[#D9CFC7] rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-[#4F4338] font-bold text-xl">PY</span>
                 </div>
                 <span className="font-bold text-xl text-gray-900">
                   Pydesignhk
@@ -185,18 +185,18 @@ export function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-auto">
+      <footer className="bg-[#EFE9E3] text-[#4F4338] mt-auto border-t border-[#E6DDD5]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Company Info */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">PY</span>
+                <div className="w-10 h-10 bg-gradient-to-br from-[#C9B59C] to-[#D9CFC7] rounded-lg flex items-center justify-center">
+                  <span className="text-[#4F4338] font-bold text-xl">PY</span>
                 </div>
                 <span className="font-bold text-xl">Pydesignhk</span>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-[#7A6751] mb-4">
                 Transparent renovation starts here. Get accurate estimates and
                 track your project in real-time.
               </p>
@@ -210,7 +210,7 @@ export function Layout() {
                   <li key={item.name}>
                     <Link
                       to={item.href}
-                      className="text-gray-400 hover:text-white transition-colors"
+                    className="text-[#7A6751] hover:text-[#4F4338] transition-colors"
                     >
                       {item.name}
                     </Link>
@@ -222,7 +222,7 @@ export function Layout() {
             {/* Contact */}
             <div>
               <h3 className="font-semibold mb-4">Contact</h3>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-[#7A6751]">
                 <li>Email: info@pydesignhk.com</li>
                 <li>Phone: +852 1234 5678</li>
                 <li>Hong Kong</li>
@@ -230,7 +230,7 @@ export function Layout() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-[#D9CFC7] mt-8 pt-8 text-center text-[#7A6751]">
             <p>
               &copy; {new Date().getFullYear()} Pydesignhk. All rights reserved.
             </p>

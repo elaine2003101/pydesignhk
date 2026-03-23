@@ -42,13 +42,13 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9F8F6] to-[#EFE9E3] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">PY</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-[#C9B59C] to-[#D9CFC7] rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-[#4F4338] font-bold text-2xl">PY</span>
             </div>
             <span className="font-bold text-2xl text-gray-900">Pydesignhk</span>
           </div>
@@ -142,14 +142,14 @@ export function Login() {
                   Password: customer123
                 </div>
               </div>
-              <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                <div className="text-sm font-medium text-purple-900 mb-1">
+              <div className="p-3 bg-[#EFE9E3] rounded-lg border border-[#D9CFC7]">
+                <div className="text-sm font-medium text-[#4F4338] mb-1">
                   Admin Account
                 </div>
-                <div className="text-xs text-purple-700">
+                <div className="text-xs text-[#7A6751]">
                   Email: admin@demo.com
                 </div>
-                <div className="text-xs text-purple-700">Password: admin123</div>
+                <div className="text-xs text-[#7A6751]">Password: admin123</div>
               </div>
             </div>
           </div>
