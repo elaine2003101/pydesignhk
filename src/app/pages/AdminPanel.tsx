@@ -8,10 +8,21 @@ import {
   AlertCircle,
   CheckCircle,
   Image as ImageIcon,
-  Calendar,
   Users,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  getIdeaStarterLeads,
+  getLeadDestinationSettings,
+  IdeaStarterLead,
+  LeadDestinationSettings,
+  LeadStage,
+  queueLeadForEstimate,
+  saveLeadDestinationSettings,
+  submitLeadToDestinations,
+  updateIdeaStarterLead,
+} from "../lib/leadPipeline";
 
 interface Project {
   id: string;
@@ -25,8 +36,12 @@ export function AdminPanel() {
   const navigate = useNavigate();
   const [user, setUser] = useState<{ email: string; role: string } | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "projects" | "pricing" | "updates"
+    "projects" | "pricing" | "updates" | "leads"
   >("projects");
+  const [leads, setLeads] = useState<IdeaStarterLead[]>([]);
+  const [leadSettings, setLeadSettings] = useState<LeadDestinationSettings>(
+    getLeadDestinationSettings(),
+  );
 
   const [projects, setProjects] = useState<Project[]>([
     {
@@ -77,6 +92,8 @@ export function AdminPanel() {
       return;
     }
     setUser(parsedUser);
+    setLeads(getIdeaStarterLeads());
+    setLeadSettings(getLeadDestinationSettings());
   }, [navigate]);
 
   const handleUpdateProject = (projectId: string, field: string, value: any) => {
@@ -115,6 +132,44 @@ export function AdminPanel() {
     toast.success("Pricing parameters updated successfully!");
   };
 
+  const handleLeadStageChange = (leadId: string, stage: LeadStage) => {
+    const updatedLead = updateIdeaStarterLead(leadId, { stage });
+    if (!updatedLead) {
+      toast.error("Lead not found");
+      return;
+    }
+
+    setLeads(getIdeaStarterLeads());
+    toast.success("Lead stage updated");
+  };
+
+  const handleSaveLeadSettings = () => {
+    saveLeadDestinationSettings(leadSettings);
+    toast.success("Lead integration settings saved");
+  };
+
+  const handleOpenEstimateFromLead = (lead: IdeaStarterLead) => {
+    queueLeadForEstimate(lead.id);
+    navigate("/estimate");
+    toast.success("Lead sent to estimate flow");
+  };
+
+  const handleResubmitLead = async (lead: IdeaStarterLead) => {
+    const result = await submitLeadToDestinations(lead, leadSettings);
+
+    if (result.errors.length > 0) {
+      toast.error(result.errors[0]);
+      return;
+    }
+
+    if (result.actions.length === 0) {
+      toast.info("No external destination is configured yet");
+      return;
+    }
+
+    toast.success(`Lead sent to ${result.actions.join(", ")}`);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -151,6 +206,7 @@ export function AdminPanel() {
                 { id: "projects", label: "Project Management", icon: FileText },
                 { id: "pricing", label: "Cost Management", icon: DollarSign },
                 { id: "updates", label: "Progress Updates", icon: Upload },
+                { id: "leads", label: "Lead Pipeline", icon: Users },
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -523,6 +579,230 @@ export function AdminPanel() {
                     >
                       Clear
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "leads" && (
+              <div className="space-y-10">
+                <div>
+                  <h2 className="text-2xl mb-2 text-gray-900">Lead Pipeline</h2>
+                  <p className="text-gray-600">
+                    Review cold-traffic leads, mirror them to external tools, and push them into quotation faster.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {[
+                    { label: "Total Leads", value: leads.length },
+                    {
+                      label: "New",
+                      value: leads.filter((lead) => lead.stage === "new").length,
+                    },
+                    {
+                      label: "Qualified",
+                      value: leads.filter((lead) => lead.stage === "qualified").length,
+                    },
+                    {
+                      label: "Quoted",
+                      value: leads.filter((lead) => lead.stage === "quoted").length,
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-xl border border-gray-200 bg-gray-50 p-5"
+                    >
+                      <div className="text-sm text-gray-600 mb-2">{item.label}</div>
+                      <div className="text-3xl font-semibold text-gray-900">
+                        {item.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-[0.85fr_1.15fr] gap-8">
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                    <h3 className="text-xl text-gray-900 mb-2">Lead Integrations</h3>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Local storage stays enabled for demo use. Add email or webhook endpoints if you want these leads to flow into operational tools.
+                    </p>
+
+                    <div className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Recipients
+                        </label>
+                        <input
+                          type="text"
+                          value={leadSettings.emailRecipients}
+                          onChange={(e) =>
+                            setLeadSettings({
+                              ...leadSettings,
+                              emailRecipients: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                          placeholder="sales@pydesignhk.com"
+                        />
+                      </div>
+
+                      <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg bg-white">
+                        <input
+                          type="checkbox"
+                          checked={leadSettings.openMailClient}
+                          onChange={(e) =>
+                            setLeadSettings({
+                              ...leadSettings,
+                              openMailClient: e.target.checked,
+                            })
+                          }
+                        />
+                        <span className="text-sm text-gray-700">
+                          Open the user lead in the mail client when email recipients are configured
+                        </span>
+                      </label>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Google Sheets Webhook URL
+                        </label>
+                        <input
+                          type="url"
+                          value={leadSettings.googleSheetsWebhookUrl}
+                          onChange={(e) =>
+                            setLeadSettings({
+                              ...leadSettings,
+                              googleSheetsWebhookUrl: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                          placeholder="https://script.google.com/macros/s/..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Airtable Webhook URL
+                        </label>
+                        <input
+                          type="url"
+                          value={leadSettings.airtableWebhookUrl}
+                          onChange={(e) =>
+                            setLeadSettings({
+                              ...leadSettings,
+                              airtableWebhookUrl: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                          placeholder="https://hooks.airtable.com/..."
+                        />
+                      </div>
+
+                      <button
+                        onClick={handleSaveLeadSettings}
+                        className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Save Lead Integrations
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {leads.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center">
+                        <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-xl text-gray-900 mb-2">No Leads Yet</h3>
+                        <p className="text-gray-600">
+                          New Idea Starter submissions will appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      leads.map((lead) => (
+                        <div
+                          key={lead.id}
+                          className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+                        >
+                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                            <div className="space-y-3">
+                              <div className="flex flex-wrap items-center gap-3">
+                                <h3 className="text-xl text-gray-900">{lead.name}</h3>
+                                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium capitalize">
+                                  {lead.requestType}
+                                </span>
+                                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm capitalize">
+                                  {lead.stage}
+                                </span>
+                              </div>
+                              <div className="text-sm text-gray-600 space-y-1">
+                                <div>{lead.email}</div>
+                                <div>{lead.contact || "No phone provided"}</div>
+                                <div>
+                                  Captured {new Date(lead.createdAt).toLocaleString("en-US")}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <div className="rounded-lg bg-gray-50 p-3">
+                                  <div className="text-gray-500 mb-1">Room</div>
+                                  <div className="font-medium text-gray-900">{lead.room}</div>
+                                </div>
+                                <div className="rounded-lg bg-gray-50 p-3">
+                                  <div className="text-gray-500 mb-1">Budget</div>
+                                  <div className="font-medium text-gray-900">{lead.budget}</div>
+                                </div>
+                                <div className="rounded-lg bg-gray-50 p-3">
+                                  <div className="text-gray-500 mb-1">Style</div>
+                                  <div className="font-medium text-gray-900">{lead.style}</div>
+                                </div>
+                              </div>
+                              {lead.notes && (
+                                <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
+                                  {lead.notes}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="lg:w-64 space-y-3">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Lead Stage
+                                </label>
+                                <select
+                                  value={lead.stage}
+                                  onChange={(e) =>
+                                    handleLeadStageChange(
+                                      lead.id,
+                                      e.target.value as LeadStage,
+                                    )
+                                  }
+                                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                                >
+                                  <option value="new">New</option>
+                                  <option value="contacted">Contacted</option>
+                                  <option value="qualified">Qualified</option>
+                                  <option value="quoted">Quoted</option>
+                                </select>
+                              </div>
+
+                              <button
+                                onClick={() => handleOpenEstimateFromLead(lead)}
+                                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Use In Estimate
+                              </button>
+
+                              <button
+                                onClick={() => handleResubmitLead(lead)}
+                                className="w-full px-4 py-3 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                              >
+                                <Send className="w-4 h-4" />
+                                Resubmit Lead
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

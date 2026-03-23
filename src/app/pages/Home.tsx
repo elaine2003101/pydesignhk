@@ -7,6 +7,9 @@ import {
   BarChart3,
   ArrowRight,
   CheckCircle,
+  Lightbulb,
+  Paintbrush,
+  House,
 } from "lucide-react";
 
 export function Home() {
@@ -65,6 +68,27 @@ export function Home() {
     { value: "4.9/5", label: "Customer Rating" },
   ];
 
+  const ideaTracks = [
+    {
+      icon: House,
+      title: "Start With The Right Room",
+      description:
+        "Help cold visitors decide whether to begin with the living room, kitchen, or bedroom based on impact and budget.",
+    },
+    {
+      icon: Paintbrush,
+      title: "Choose A Style Direction",
+      description:
+        "Turn broad preferences like calm minimal or warm modern into a practical concept they can discuss with confidence.",
+    },
+    {
+      icon: Lightbulb,
+      title: "Convert Browsing Into A Brief",
+      description:
+        "Give undecided traffic a clearer next step before asking them for a full quotation request.",
+    },
+  ];
+
   return (
     <div>
       {/* Hero Section */}
@@ -80,6 +104,13 @@ export function Home() {
               communicate seamlessly with your renovation team.
             </p>
             <div className="flex flex-wrap gap-4">
+              <Link
+                to="/ideas"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-amber-300 text-slate-900 rounded-lg hover:bg-amber-200 transition-colors shadow-lg"
+              >
+                <Lightbulb className="w-5 h-5" />
+                Need Ideas First
+              </Link>
               <Link
                 to="/estimate"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
@@ -111,6 +142,63 @@ export function Home() {
                 <div className="text-gray-600">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Idea Starter Section */}
+      <section className="py-20 bg-gradient-to-b from-white to-blue-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 items-start">
+            <div className="lg:sticky lg:top-24">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 mb-6">
+                <Lightbulb className="w-4 h-4" />
+                For Cold Traffic
+              </div>
+              <h2 className="text-4xl mb-5 text-gray-900">
+                Not ready for a quotation yet?
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed mb-8">
+                Some visitors are still exploring what to renovate, how much to
+                spend, and what style fits their space. Give them a lighter
+                first step instead of losing them.
+              </p>
+              <Link
+                to="/ideas"
+                className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg"
+              >
+                Explore Idea Starter
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {ideaTracks.map((track) => {
+                const Icon = track.icon;
+
+                return (
+                  <div
+                    key={track.title}
+                    className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+                      <Icon className="w-7 h-7" />
+                    </div>
+                    <h3 className="text-2xl text-gray-900 mb-4">{track.title}</h3>
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      {track.description}
+                    </p>
+                    <Link
+                      to="/ideas"
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                    >
+                      See Suggestions
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>

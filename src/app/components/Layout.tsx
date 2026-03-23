@@ -23,6 +23,7 @@ export function Layout() {
 
   const navigation = [
     { name: "Home", href: "/" },
+    { name: "Idea Starter", href: "/ideas" },
     { name: "Get Estimate", href: "/estimate" },
     { name: "Track Project", href: "/track" },
   ];

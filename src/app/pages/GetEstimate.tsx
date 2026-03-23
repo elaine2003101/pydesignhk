@@ -1,14 +1,31 @@
-import { useState } from "react";
-import { Calculator, Save, Send, DollarSign, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Calculator,
+  Save,
+  Send,
+  DollarSign,
+  TrendingUp,
+  CheckCircle,
+} from "lucide-react";
 import { toast } from "sonner";
+import {
+  consumeQueuedLeadForEstimate,
+  IdeaStarterLead,
+  mapLeadToEstimateDraft,
+  updateIdeaStarterLead,
+} from "../lib/leadPipeline";
 
 export function GetEstimate() {
   const [formData, setFormData] = useState({
+    clientName: "",
+    clientEmail: "",
     propertySize: "",
     renovationType: "",
     materialTier: "",
     addOns: [] as string[],
+    projectBrief: "",
   });
+  const [selectedLead, setSelectedLead] = useState<IdeaStarterLead | null>(null);
 
   const [estimate, setEstimate] = useState<{
     total: number;
@@ -32,6 +49,26 @@ export function GetEstimate() {
     "Flooring Upgrade": 4000,
     "Appliance Package": 10000,
   };
+
+  useEffect(() => {
+    const queuedLead = consumeQueuedLeadForEstimate();
+    if (!queuedLead) {
+      return;
+    }
+
+    const draft = mapLeadToEstimateDraft(queuedLead);
+    setSelectedLead(queuedLead);
+    setFormData((prev) => ({
+      ...prev,
+      clientName: draft.clientName,
+      clientEmail: draft.clientEmail,
+      renovationType: draft.renovationType,
+      materialTier: draft.materialTier,
+      addOns: draft.addOns,
+      projectBrief: draft.projectBrief,
+    }));
+    toast.success("Lead details loaded into the estimate form.");
+  }, []);
 
   const calculateEstimate = () => {
     if (!formData.propertySize || !formData.renovationType || !formData.materialTier) {
@@ -87,9 +124,19 @@ export function GetEstimate() {
       toast.error("Please calculate estimate first");
       return;
     }
+
+    if (selectedLead) {
+      updateIdeaStarterLead(selectedLead.id, { stage: "quoted" });
+    }
+
     localStorage.setItem(
       "savedEstimate",
-      JSON.stringify({ formData, estimate, date: new Date().toISOString() })
+      JSON.stringify({
+        formData,
+        estimate,
+        leadId: selectedLead?.id ?? null,
+        date: new Date().toISOString(),
+      })
     );
     toast.success("Estimate saved successfully!");
   };
@@ -98,6 +145,9 @@ export function GetEstimate() {
     if (!estimate) {
       toast.error("Please calculate estimate first");
       return;
+    }
+    if (selectedLead) {
+      updateIdeaStarterLead(selectedLead.id, { stage: "qualified" });
     }
     toast.success("Consultation request sent! We'll contact you within 24 hours.");
   };
@@ -126,6 +176,69 @@ export function GetEstimate() {
             <h2 className="text-2xl mb-6 text-gray-900">Project Details</h2>
 
             <div className="space-y-6">
+              {selectedLead && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-emerald-900">
+                        Lead loaded from Idea Starter
+                      </div>
+                      <div className="text-sm text-emerald-800 mt-1">
+                        {selectedLead.name} · {selectedLead.room} · {selectedLead.budget} · {selectedLead.style}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.clientName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientName: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    placeholder="Client name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Client Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clientEmail: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    placeholder="name@example.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Project Brief
+                </label>
+                <textarea
+                  rows={4}
+                  value={formData.projectBrief}
+                  onChange={(e) =>
+                    setFormData({ ...formData, projectBrief: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all resize-none"
+                  placeholder="Room, budget direction, style, goals, and any client notes"
+                />
+              </div>
+
               {/* Property Size */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
