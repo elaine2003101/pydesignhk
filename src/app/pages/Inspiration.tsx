@@ -8,7 +8,9 @@ import {
   Hammer,
   House,
   Lightbulb,
+  Palette,
   Paintbrush,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -38,6 +40,168 @@ const styleOptions = [
   { id: "japandi", label: "Japandi Soft" },
   { id: "luxury", label: "Boutique Luxury" },
   { id: "contrast", label: "Dark Contrast" },
+];
+
+type RoomId = (typeof roomOptions)[number]["id"];
+type BudgetId = (typeof budgetOptions)[number]["id"];
+type StyleId = (typeof styleOptions)[number]["id"];
+
+type QuizOption = {
+  id: string;
+  label: string;
+  description: string;
+  room?: RoomId;
+  styleScores?: Partial<Record<StyleId, number>>;
+  budget?: BudgetId;
+  palettePreview?: string[];
+};
+
+type QuizQuestion = {
+  id: string;
+  prompt: string;
+  helper: string;
+  options: QuizOption[];
+};
+
+const quizQuestions: QuizQuestion[] = [
+  {
+    id: "focus-room",
+    prompt: "Which area should feel better first?",
+    helper:
+      "This helps us suggest the most sensible first moodboard for a Hong Kong home.",
+    options: [
+      {
+        id: "living-room",
+        label: "Living room first",
+        description: "Best if you want the home to feel more polished for daily living and guests.",
+        room: "living-room",
+        styleScores: { calm: 1, warm: 1, smart: 1 },
+      },
+      {
+        id: "kitchen",
+        label: "Kitchen first",
+        description: "Best if workflow, storage, and resale impact matter most.",
+        room: "kitchen",
+        styleScores: { warm: 1, smart: 2, contrast: 1 },
+      },
+      {
+        id: "bedroom",
+        label: "Bedroom first",
+        description: "Best if comfort, storage, and softness matter more than showpiece design.",
+        room: "bedroom",
+        styleScores: { calm: 1, japandi: 1, smart: 1 },
+      },
+      {
+        id: "bathroom",
+        label: "Bathroom first",
+        description: "Best if you want a fast visual upgrade in a small footprint.",
+        room: "bathroom",
+        styleScores: { calm: 1, luxury: 1, smart: 1 },
+      },
+    ],
+  },
+  {
+    id: "daily-priority",
+    prompt: "What matters most in your renovation?",
+    helper:
+      "Choose the goal that sounds closest to your real day-to-day frustration.",
+    options: [
+      {
+        id: "calm-space",
+        label: "I want it to feel calmer",
+        description: "Cleaner visual lines, softer layering, and less noise.",
+        styleScores: { calm: 3, japandi: 2, warm: 1 },
+      },
+      {
+        id: "more-storage",
+        label: "I need smarter storage",
+        description: "Built-ins, hidden joinery, and more efficient planning.",
+        styleScores: { smart: 4, warm: 1 },
+      },
+      {
+        id: "more-warmth",
+        label: "I want it warmer and more welcoming",
+        description: "Wood tones, softer stone, and a more inviting feel.",
+        styleScores: { warm: 4, japandi: 1, luxury: 1 },
+      },
+      {
+        id: "more-luxury",
+        label: "I want it to feel more premium",
+        description: "Hotel-like detailing, feature finishes, and stronger impact.",
+        styleScores: { luxury: 4, contrast: 1, warm: 1 },
+      },
+    ],
+  },
+  {
+    id: "visual-mood",
+    prompt: "Which visual mood are you naturally drawn to?",
+    helper:
+      "Most clients know how they want the room to feel before they know the style name.",
+    options: [
+      {
+        id: "soft-airy",
+        label: "Soft and airy",
+        description: "Light, open, and easy to live with.",
+        styleScores: { calm: 3, japandi: 2 },
+        palettePreview: ["#F7F2EB", "#E2D8CA", "#BFA78F", "#6E655C"],
+      },
+      {
+        id: "warm-layered",
+        label: "Warm and layered",
+        description: "Natural materials, grounded tones, and richer warmth.",
+        styleScores: { warm: 3, luxury: 1, smart: 1 },
+        palettePreview: ["#EEE3D3", "#C7AA86", "#8A6A4A", "#43413B"],
+      },
+      {
+        id: "clean-practical",
+        label: "Clean and practical",
+        description: "Simple, efficient, and strongly layout-driven.",
+        styleScores: { smart: 3, calm: 1, warm: 1 },
+        palettePreview: ["#F4F1EC", "#D8D2C8", "#8F8477", "#38414A"],
+      },
+      {
+        id: "bold-contrast",
+        label: "Bold with contrast",
+        description: "Deeper tones, stronger edges, and more drama.",
+        styleScores: { contrast: 4, luxury: 1 },
+        palettePreview: ["#F1ECE6", "#B9A89A", "#6E5C50", "#232426"],
+      },
+    ],
+  },
+  {
+    id: "finish-direction",
+    prompt: "Which finish family feels most like you?",
+    helper:
+      "This pushes the recommendation closer to the material language you actually like.",
+    options: [
+      {
+        id: "oak-stone",
+        label: "Oak and soft stone",
+        description: "Quiet, warm, and easy to maintain visually.",
+        styleScores: { japandi: 3, warm: 2, calm: 1 },
+      },
+      {
+        id: "painted-joinery",
+        label: "Painted joinery and hidden storage",
+        description: "Sharper planning with less visual clutter.",
+        styleScores: { smart: 4, calm: 1 },
+      },
+      {
+        id: "fluted-brass",
+        label: "Fluted details and brass",
+        description: "Boutique-hotel cues with stronger styling intent.",
+        styleScores: { luxury: 4, warm: 1 },
+        budget: "premium",
+      },
+      {
+        id: "charcoal-stone",
+        label: "Charcoal and richer stone",
+        description: "A darker, more graphic interior direction.",
+        styleScores: { contrast: 4, luxury: 1 },
+        budget: "premium",
+      },
+    ],
+  },
 ];
 
 // Replace these URLs later with your own project photos, renders, or portfolio images.
@@ -352,6 +516,7 @@ export function Inspiration() {
   const [selectedBudget, setSelectedBudget] = useState(budgetOptions[1].id);
   const [selectedStyle, setSelectedStyle] = useState(styleOptions[0].id);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [leadForm, setLeadForm] = useState({
     name: "",
     email: "",
@@ -377,6 +542,9 @@ export function Inspiration() {
     budgetOptions.find((option) => option.id === selectedBudget)?.label ?? "";
   const selectedStyleLabel =
     styleOptions.find((option) => option.id === selectedStyle)?.label ?? "";
+  const answeredQuizCount = quizQuestions.filter(
+    (question) => quizAnswers[question.id],
+  ).length;
   const moodboardGroups = roomOptions
     .map((room) => ({
       roomId: room.id,
@@ -399,6 +567,63 @@ export function Inspiration() {
     return [...matchingStyleBoards, ...otherBoards];
   }, [selectedRoom, selectedStyle]);
   const currentCarouselBoard = carouselBoards[carouselIndex] ?? presetMoodboards[0];
+  const quizResult = useMemo(() => {
+    const scoreMap = Object.fromEntries(
+      styleOptions.map((option) => [option.id, 0]),
+    ) as Record<StyleId, number>;
+
+    let recommendedRoom: RoomId = selectedRoom as RoomId;
+    let suggestedBudget: BudgetId | null = null;
+
+    quizQuestions.forEach((question) => {
+      const answerId = quizAnswers[question.id];
+      const answer = question.options.find((option) => option.id === answerId);
+
+      if (!answer) {
+        return;
+      }
+
+      if (answer.room) {
+        recommendedRoom = answer.room;
+      }
+
+      if (answer.budget) {
+        suggestedBudget = answer.budget;
+      }
+
+      Object.entries(answer.styleScores ?? {}).forEach(([styleId, value]) => {
+        scoreMap[styleId as StyleId] += value ?? 0;
+      });
+    });
+
+    const recommendedStyle = styleOptions.reduce<StyleId>((best, option) => {
+      if (scoreMap[option.id] > scoreMap[best]) {
+        return option.id;
+      }
+      return best;
+    }, selectedStyle as StyleId);
+
+    const recommendedBoard =
+      presetMoodboards.find(
+        (board) =>
+          board.room === recommendedRoom && board.style === recommendedStyle,
+      ) ??
+      presetMoodboards.find((board) => board.room === recommendedRoom) ??
+      presetMoodboards[0];
+
+    return {
+      room: recommendedRoom,
+      style: recommendedStyle,
+      budget: suggestedBudget,
+      board: recommendedBoard,
+      reasons: quizQuestions
+        .map((question) =>
+          question.options.find((option) => option.id === quizAnswers[question.id]),
+        )
+        .filter((value): value is QuizOption => Boolean(value)),
+    };
+  }, [quizAnswers, selectedRoom, selectedStyle]);
+  const isQuizReady = answeredQuizCount === quizQuestions.length;
 
   useEffect(() => {
     setCarouselIndex(0);
@@ -484,6 +709,34 @@ export function Inspiration() {
     toast.success(`${moodboard.title} added to the lead request.`);
   };
 
+  const handleApplyQuizResult = () => {
+    setSelectedRoom(quizResult.room);
+    setSelectedStyle(quizResult.style);
+
+    if (quizResult.budget) {
+      setSelectedBudget(quizResult.budget);
+    }
+
+    setLeadForm((current) => ({
+      ...current,
+      requestType: current.requestType === "consultation" ? "both" : "moodboard",
+      notes: current.notes
+        ? `${current.notes}\nQuiz result: ${quizResult.board.title} · ${quizResult.board.fit}`
+        : `Quiz result: ${quizResult.board.title} · ${quizResult.board.fit}`,
+    }));
+
+    document.getElementById("featured-moodboards")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+
+    toast.success("Style quiz applied to your moodboard direction.");
+  };
+
+  const handleResetQuiz = () => {
+    setQuizAnswers({});
+  };
+
   const handleCarouselMove = (direction: "prev" | "next") => {
     if (carouselBoards.length === 0) {
       return;
@@ -540,6 +793,207 @@ export function Inspiration() {
 
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 grid grid-cols-1 xl:grid-cols-[1fr_0.9fr] gap-8">
+            <div className="rounded-[2rem] border border-[#D9CFC7] bg-white p-8 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E6DDD5] bg-[#F9F8F6] px-4 py-2 text-sm text-[#7A6751] mb-6">
+                <Sparkles className="h-4 w-4" />
+                Guided Style Quiz
+              </div>
+              <h2 className="text-3xl text-gray-900 mb-3">
+                Not sure what you want yet? Answer a few simple questions.
+              </h2>
+              <p className="text-gray-600 mb-8 max-w-3xl">
+                This works better for visitors who do not know style names yet.
+                Pick what feels right, and we will turn it into a room direction,
+                likely design style, and colour palette suggestion.
+              </p>
+
+              <div className="space-y-8">
+                {quizQuestions.map((question, index) => (
+                  <div key={question.id}>
+                    <div className="mb-4">
+                      <div className="text-xs uppercase tracking-[0.2em] text-[#8F775C] mb-2">
+                        Question {index + 1}
+                      </div>
+                      <h3 className="text-xl text-gray-900 mb-1">{question.prompt}</h3>
+                      <p className="text-sm text-gray-500">{question.helper}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {question.options.map((option) => {
+                        const isSelected = quizAnswers[question.id] === option.id;
+
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              setQuizAnswers((current) => ({
+                                ...current,
+                                [question.id]: option.id,
+                              }))
+                            }
+                            className={`rounded-[1.6rem] border p-5 text-left transition-all ${
+                              isSelected
+                                ? "border-[#C9B59C] bg-[#F9F4EF] shadow-sm"
+                                : "border-[#E6DDD5] bg-white hover:border-[#D9CFC7] hover:-translate-y-0.5"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-4 mb-3">
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              {isSelected && (
+                                <span className="rounded-full bg-[#8F775C] px-2 py-1 text-xs text-white">
+                                  Picked
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600">{option.description}</div>
+                            {option.palettePreview && (
+                              <div className="mt-4 flex gap-2">
+                                {option.palettePreview.map((color) => (
+                                  <div
+                                    key={`${question.id}-${option.id}-${color}`}
+                                    className="h-9 flex-1 rounded-2xl border border-black/5"
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-[#D9CFC7] bg-[#F9F8F6] p-8 shadow-sm">
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm text-[#7A6751] border border-[#E6DDD5] mb-4">
+                    <Palette className="h-4 w-4" />
+                    Quiz Recommendation
+                  </div>
+                  <h2 className="text-3xl text-gray-900 mb-2">Your likely direction</h2>
+                  <p className="text-gray-600">
+                    We use your answers to suggest a board before you even know the style name.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-white px-4 py-3 text-center border border-[#E6DDD5] min-w-[110px]">
+                  <div className="text-2xl text-[#8F775C]">{answeredQuizCount}/{quizQuestions.length}</div>
+                  <div className="text-xs uppercase tracking-[0.16em] text-gray-500">
+                    Answered
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-[1.8rem] border border-[#E6DDD5] bg-white">
+                <img
+                  src={quizResult.board.image}
+                  alt={quizResult.board.title}
+                  className="h-64 w-full object-cover"
+                />
+                <div className="p-6">
+                  <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
+                    Suggested room · {
+                      roomOptions.find((option) => option.id === quizResult.room)?.label
+                    }
+                  </div>
+                  <h3 className="text-3xl text-gray-900 mb-2">{quizResult.board.title}</h3>
+                  <p className="text-gray-600 mb-5">{quizResult.board.description}</p>
+
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="rounded-2xl bg-[#F9F8F6] border border-[#E6DDD5] p-4">
+                      <div className="text-sm text-gray-500 mb-1">Likely style</div>
+                      <div className="text-lg text-gray-900">
+                        {styleOptions.find((option) => option.id === quizResult.style)?.label}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-[#F9F8F6] border border-[#E6DDD5] p-4">
+                      <div className="text-sm text-gray-500 mb-1">Suggested budget band</div>
+                      <div className="text-lg text-gray-900">
+                        {budgetOptions.find((option) => option.id === quizResult.budget)?.label ?? "Flexible"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-3">
+                      Recommended colour direction
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {quizResult.board.swatches.map((swatch) => (
+                        <div
+                          key={`quiz-result-${swatch.label}`}
+                          className="flex items-center gap-4 rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] p-3"
+                        >
+                          <div
+                            className="h-12 w-12 rounded-2xl border border-black/5"
+                            style={{ backgroundColor: swatch.color }}
+                          />
+                          <div>
+                            <div className="text-sm text-gray-500">{swatch.label}</div>
+                            <div className="text-base text-gray-900">{swatch.color}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-3">
+                      Why this fits
+                    </div>
+                    <div className="space-y-3">
+                      {quizResult.reasons.map((reason) => (
+                        <div key={reason.id} className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-[#8F775C] mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="text-gray-900">{reason.label}</div>
+                            <div className="text-sm text-gray-500">{reason.description}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={handleApplyQuizResult}
+                      disabled={!isQuizReady}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white transition-colors hover:bg-[#7A6751] disabled:cursor-not-allowed disabled:bg-[#C9B59C]"
+                    >
+                      Apply This Direction
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openLeadCapture}
+                      className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
+                    >
+                      Request This Style
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResetQuiz}
+                      className="inline-flex items-center gap-2 rounded-xl border border-[#E6DDD5] bg-transparent px-5 py-3 text-gray-600 hover:bg-white transition-colors"
+                    >
+                      Reset Answers
+                    </button>
+                  </div>
+
+                  {!isQuizReady && (
+                    <p className="mt-4 text-sm text-gray-500">
+                      Finish all {quizQuestions.length} questions to lock this recommendation into the moodboard flow.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-8">
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
               <h2 className="text-3xl text-gray-900 mb-2">Build Your Idea Direction</h2>
@@ -680,7 +1134,7 @@ export function Inspiration() {
         </div>
       </section>
 
-      <section className="pb-20">
+      <section id="featured-moodboards" className="pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 max-w-3xl">
             <h2 className="text-4xl text-gray-900 mb-4">Ready-Made Moodboards</h2>
