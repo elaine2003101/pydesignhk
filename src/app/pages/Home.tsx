@@ -19,48 +19,48 @@ export function Home() {
   const features = [
     {
       icon: DollarSign,
-      title: "Transparent Pricing",
+      title: "Transparent HK Quotation Logic",
       description:
-        "Get accurate cost estimates upfront with detailed breakdowns of materials, labor, and design fees. No hidden charges.",
+        "See clearer renovation ranges for Hong Kong flats with material, labour, and design logic broken down before the scope gets inflated.",
     },
     {
       icon: LineChart,
-      title: "Real-time Progress Tracking",
+      title: "Compact-Space Planning Support",
       description:
-        "Monitor your renovation project's progress with live updates, photos, and milestone tracking.",
+        "Start with layout direction, storage priorities, and moodboards suited to HOS units, private apartments, and resale flats where every square foot matters.",
     },
     {
       icon: MessageSquare,
-      title: "Improved Communication",
+      title: "Faster Client Communication",
       description:
-        "Stay connected with your contractor through our platform. Get updates, ask questions, and receive timely responses.",
+        "Move from inspiration to consultation with a cleaner brief, fewer back-and-forth messages, and a more actionable starting point for your contractor or design team.",
     },
   ];
 
   const howItWorks = [
     {
       step: "1",
-      title: "Get Your Estimate",
+      title: "Choose A HK-Ready Direction",
       description:
-        "Enter your property details and renovation requirements to receive an instant cost estimate with detailed breakdown.",
+        "Start with room ideas, storage logic, and finish direction that make sense for compact Hong Kong layouts.",
     },
     {
       step: "2",
-      title: "Request Consultation",
+      title: "Build Your Budget Range",
       description:
-        "Schedule a consultation with our team to discuss your project in detail and finalize the scope.",
+        "Turn your preferred direction into a more realistic renovation band for a flat, HOS unit, or family apartment.",
     },
     {
       step: "3",
-      title: "Track Progress",
+      title: "Brief The Project Faster",
       description:
-        "Once your project begins, log in to track milestones, view photos, and monitor budget in real-time.",
+        "Use the moodboard, room priority, and project notes to shorten the first consultation and reduce vague discussion.",
     },
     {
       step: "4",
-      title: "Project Completion",
+      title: "Track Delivery",
       description:
-        "Review the final work, provide feedback, and enjoy your beautifully renovated space.",
+        "Once works start, keep the scope, milestone updates, and follow-up communication in one place.",
     },
   ];
 
@@ -74,49 +74,49 @@ export function Home() {
   const ideaTracks = [
     {
       icon: House,
-      title: "Start With The Right Room",
+      title: "Start With The Right Flat Priority",
       description:
-        "Help cold visitors decide whether to begin with the living room, kitchen, or bedroom based on impact and budget.",
+        "Help visitors decide whether the biggest impact should begin with the living room, kitchen, bedroom, or bathroom based on Hong Kong living patterns and budget.",
     },
     {
       icon: Paintbrush,
-      title: "Choose A Style Direction",
+      title: "Choose A Style That Fits Smaller Homes",
       description:
-        "Turn broad preferences like calm minimal or warm modern into a practical concept they can discuss with confidence.",
+        "Turn loose preferences like Japandi, boutique luxury, or storage-focused minimalism into something that works in tighter city layouts.",
     },
     {
       icon: Lightbulb,
-      title: "Convert Browsing Into A Brief",
+      title: "Turn Browsing Into A Practical Brief",
       description:
-        "Give undecided traffic a clearer next step before asking them for a full quotation request.",
+        "Give undecided traffic a clearer first brief before asking them to commit to measurements, drawings, or a full quotation request.",
     },
   ];
 
   const heroBoards = [
     {
-      title: "Warm Modern Kitchen",
+      title: "Warm Modern HK Kitchen",
       image:
         "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
-      meta: "HKD 180k - 380k",
+      meta: "Compact flat upgrade · HKD 180k - 380k",
     },
     {
-      title: "Japandi Living Room",
+      title: "Japandi Living Room Reset",
       image:
         "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
-      meta: "Soft, high-conversion concept",
+      meta: "Built-in storage + lighter zoning",
     },
     {
-      title: "Boutique Bathroom",
+      title: "Boutique Bathroom Upgrade",
       image:
         "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
-      meta: "Moodboard-ready",
+      meta: "Wet-area friendly material direction",
     },
   ];
 
   const heroProof = [
-    "Idea Starter for cold traffic",
-    "Instant estimate flow for warmer leads",
-    "Lead capture into admin pipeline",
+    "Built for Hong Kong flats, HOS units, and resale homes",
+    "Moodboards that focus on storage, zoning, and finish practicality",
+    "Estimate and lead capture that move into quotation faster",
   ];
 
   return (
@@ -133,17 +133,17 @@ export function Home() {
           <div className="max-w-3xl pt-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#D9CFC7] bg-white/70 px-4 py-2 text-sm text-[#7A6751] shadow-sm animate-reveal-up">
               <Sparkles className="h-4 w-4" />
-              Renovation ideas, quotations, and lead capture in one journey
+              Hong Kong interior direction, quotation, and lead capture in one journey
             </div>
 
             <h1 className="mt-6 text-5xl leading-[1.05] text-[#3F352D] md:text-7xl animate-reveal-up animation-delay-150">
-              Turn curiosity into a renovation plan people actually want to start.
+              Turn “still thinking about renovation” into a clear Hong Kong-ready starting brief.
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#6E6258] md:text-xl animate-reveal-up animation-delay-300">
-              Give undecided visitors inspiration, convert warmer traffic with
-              instant estimates, and keep every enquiry moving with a cleaner
-              follow-up flow.
+              Help owners of private apartments, HOS units, and resale flats
+              explore better room priorities, moodboards, and budget logic
+              before the first contractor conversation becomes messy.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4 animate-reveal-up animation-delay-450">
@@ -191,7 +191,7 @@ export function Home() {
               />
               <div className="p-6">
                 <div className="mb-2 text-xs uppercase tracking-[0.22em] text-[#8A7767]">
-                  Featured Direction
+                  Featured HK Direction
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <div>
@@ -208,7 +208,7 @@ export function Home() {
             <div className="absolute right-2 top-0 w-[42%] rounded-[1.75rem] border border-white/70 bg-white p-4 shadow-[0_24px_60px_rgba(76,61,46,0.12)] animate-float animation-delay-300">
               <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-[#8A7767]">
                 <Sofa className="h-4 w-4" />
-                New Moodboard
+                New HK Moodboard
               </div>
               <img
                 src={heroBoards[1].image}
@@ -225,7 +225,7 @@ export function Home() {
               </div>
               <div className="mt-4 text-4xl">3 paths</div>
               <div className="mt-2 text-sm text-[#EFE9E3]">
-                Ideas, estimate, and consultation now sit in one visible entry flow.
+                Ideas, estimate, and consultation now sit in one visible flow for Hong Kong residential enquiries.
               </div>
               <div className="mt-5 overflow-hidden rounded-[1rem]">
                 <img

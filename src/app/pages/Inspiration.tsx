@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
+  ArrowLeft,
   ArrowRight,
   Bath,
   CheckCircle,
@@ -298,6 +299,7 @@ export function Inspiration() {
   const [selectedRoom, setSelectedRoom] = useState(roomOptions[0].id);
   const [selectedBudget, setSelectedBudget] = useState(budgetOptions[1].id);
   const [selectedStyle, setSelectedStyle] = useState(styleOptions[0].id);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const [leadForm, setLeadForm] = useState({
     name: "",
     email: "",
@@ -330,10 +332,25 @@ export function Inspiration() {
       boards: presetMoodboards.filter((moodboard) => moodboard.room === room.id),
     }))
     .filter((group) => group.boards.length > 0);
-  const matchedMoodboards = presetMoodboards.filter(
-    (moodboard) =>
-      moodboard.room === selectedRoom || moodboard.style === selectedStyle,
-  );
+  const carouselBoards = useMemo(() => {
+    const roomBoards = presetMoodboards.filter(
+      (moodboard) => moodboard.room === selectedRoom,
+    );
+
+    const matchingStyleBoards = roomBoards.filter(
+      (moodboard) => moodboard.style === selectedStyle,
+    );
+    const otherBoards = roomBoards.filter(
+      (moodboard) => moodboard.style !== selectedStyle,
+    );
+
+    return [...matchingStyleBoards, ...otherBoards];
+  }, [selectedRoom, selectedStyle]);
+  const currentCarouselBoard = carouselBoards[carouselIndex] ?? presetMoodboards[0];
+
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [selectedRoom, selectedStyle]);
 
   const openLeadCapture = () => {
     document.getElementById("lead-capture")?.scrollIntoView({
@@ -403,6 +420,18 @@ export function Inspiration() {
     toast.success(`${moodboard.title} added to the lead request.`);
   };
 
+  const handleCarouselMove = (direction: "prev" | "next") => {
+    if (carouselBoards.length === 0) {
+      return;
+    }
+
+    setCarouselIndex((current) =>
+      direction === "next"
+        ? (current + 1) % carouselBoards.length
+        : (current - 1 + carouselBoards.length) % carouselBoards.length,
+    );
+  };
+
   return (
     <div className="bg-gray-50">
       <section className="bg-gradient-to-br from-[#F9F8F6] via-[#EFE9E3] to-[#D9CFC7] text-[#4F4338] py-20">
@@ -411,27 +440,28 @@ export function Inspiration() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-[#D9CFC7] text-sm text-[#7A6751] mb-6">
                 <Lightbulb className="w-4 h-4" />
-                Idea Starter For Early-Stage Visitors
+                Hong Kong Idea Starter
               </div>
               <h1 className="text-4xl md:text-6xl leading-tight mb-6">
-                Not sure what to renovate yet? Start with a direction, not a quotation.
+                Not sure how to renovate your Hong Kong flat yet? Start with a direction, not a blind quotation.
               </h1>
               <p className="text-lg md:text-xl text-[#6E6258] max-w-2xl">
-                This page helps colder traffic move from “just browsing” to a
-                clearer project idea, budget range, and next step.
+                This page is built for Hong Kong owners comparing ideas for
+                private flats, HOS units, resale apartments, and compact family
+                homes before they are ready to commit.
               </p>
             </div>
 
             <div className="bg-white/75 backdrop-blur-sm border border-[#D9CFC7] rounded-3xl p-8 shadow-2xl">
               <h2 className="text-2xl mb-2">What you get</h2>
               <p className="text-[#6E6258] mb-6">
-                A practical starting point you can turn into an estimate or consultation.
+                A practical starting point you can turn into a quotation or consultation.
               </p>
               <div className="space-y-4">
                 {[
-                  "Suggested room priorities based on your interest",
-                  "A realistic renovation budget band",
-                  "A concept direction to speed up your consultation",
+                  "Suggested room priorities for compact Hong Kong layouts",
+                  "A realistic Hong Kong renovation budget band",
+                  "A concept direction that shortens your briefing process",
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-[#8F775C] mt-0.5 flex-shrink-0" />
@@ -450,7 +480,7 @@ export function Inspiration() {
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
               <h2 className="text-3xl text-gray-900 mb-2">Build Your Idea Direction</h2>
               <p className="text-gray-600 mb-8">
-                Choose a room, budget, and style. We will suggest a practical concept you can sell into.
+                Choose a room, budget, and style. We will suggest a practical direction suited to Hong Kong homes where layout efficiency, storage, and material durability matter.
               </p>
 
               <div className="space-y-8">
@@ -591,43 +621,125 @@ export function Inspiration() {
           <div className="mb-10 max-w-3xl">
             <h2 className="text-4xl text-gray-900 mb-4">Ready-Made Moodboards</h2>
             <p className="text-lg text-gray-600">
-              Yes, you can pre-set mood boards already. These act as starter directions for visitors who want inspiration before discussing scope or budget in detail.
+              These moodboards are tuned for Hong Kong interior projects, where built-in storage, clean zoning, wet-area durability, and visual openness usually matter more than pure floor area.
             </p>
           </div>
 
           <div className="mb-10 rounded-[2rem] border border-[#D9CFC7] bg-white/80 p-6 shadow-sm">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="px-3 py-1 rounded-full bg-[#EFE9E3] text-[#7A6751] text-sm">
-                Suggested for your current filters
-              </span>
-              <span className="text-sm text-gray-500">
-                {selectedRoomLabel} · {selectedStyleLabel}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {matchedMoodboards.slice(0, 3).map((moodboard) => (
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <span className="px-3 py-1 rounded-full bg-[#EFE9E3] text-[#7A6751] text-sm">
+                    Featured carousel
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {selectedRoomLabel} · {selectedStyleLabel}
+                  </span>
+                </div>
+                <h3 className="text-2xl text-gray-900">
+                  Browse room-specific boards before you request a quotation
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-3">
                 <button
-                  key={moodboard.id}
                   type="button"
-                  onClick={() => handleUseMoodboard(moodboard)}
-                  className="group text-left rounded-[1.5rem] overflow-hidden border border-[#E6DDD5] bg-[#F9F8F6] hover:border-[#C9B59C] transition-all"
+                  onClick={() => handleCarouselMove("prev")}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9CFC7] bg-white text-[#6E6258] hover:border-[#C9B59C]"
                 >
-                  <div className="h-40 overflow-hidden">
-                    <img
-                      src={moodboard.image}
-                      alt={moodboard.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
-                      {moodboard.fit}
-                    </div>
-                    <div className="text-xl text-gray-900 mb-2">{moodboard.title}</div>
-                    <div className="text-sm text-gray-600">{moodboard.tags.slice(0, 3).join(" · ")}</div>
-                  </div>
+                  <ArrowLeft className="h-4 w-4" />
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => handleCarouselMove("next")}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9CFC7] bg-white text-[#6E6258] hover:border-[#C9B59C]"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-6">
+              <div className="overflow-hidden rounded-[2rem] border border-[#E6DDD5] bg-[#F9F8F6]">
+                <img
+                  src={currentCarouselBoard.image}
+                  alt={currentCarouselBoard.title}
+                  className="h-[360px] w-full object-cover"
+                />
+                <div className="p-6">
+                  <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
+                    {currentCarouselBoard.fit}
+                  </div>
+                  <h4 className="text-3xl text-gray-900 mb-3">
+                    {currentCarouselBoard.title}
+                  </h4>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    {currentCarouselBoard.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {currentCarouselBoard.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-2 rounded-full bg-[#EFE9E3] text-[#6E6258] text-sm"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleUseMoodboard(currentCarouselBoard)}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white hover:bg-[#7A6751] transition-colors"
+                  >
+                    Use This Board
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-[2rem] border border-[#E6DDD5] bg-white p-6">
+                <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-4">
+                  Colour codes inside this board
+                </div>
+                <div className="space-y-3 mb-8">
+                  {currentCarouselBoard.palette.map((color) => (
+                    <div
+                      key={color}
+                      className="flex items-center gap-4 rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] p-3"
+                    >
+                      <div
+                        className="h-12 w-12 rounded-2xl border border-black/5"
+                        style={{ backgroundColor: color }}
+                      />
+                      <div>
+                        <div className="text-sm text-gray-500">Palette code</div>
+                        <div className="text-lg text-gray-900">{color}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-3">
+                  More boards in this room
+                </div>
+                <div className="space-y-3">
+                  {carouselBoards.map((board, index) => (
+                    <button
+                      key={board.id}
+                      type="button"
+                      onClick={() => setCarouselIndex(index)}
+                      className={`w-full text-left rounded-2xl border p-4 transition-all ${
+                        index === carouselIndex
+                          ? "border-[#C9B59C] bg-[#EFE9E3]"
+                          : "border-[#E6DDD5] bg-white hover:border-[#D9CFC7]"
+                      }`}
+                    >
+                      <div className="text-sm text-[#7A6751] mb-1">{board.fit}</div>
+                      <div className="text-lg text-gray-900">{board.title}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
