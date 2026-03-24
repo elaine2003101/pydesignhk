@@ -21,19 +21,19 @@ export function Home() {
       icon: DollarSign,
       title: "Transparent HK Quotation Logic",
       description:
-        "See clearer renovation ranges for Hong Kong flats with material, labour, and design logic broken down before the scope gets inflated.",
+        "See clearer renovation ranges for Hong Kong flats before the scope gets inflated.",
     },
     {
       icon: LineChart,
       title: "Compact-Space Planning Support",
       description:
-        "Start with layout direction, storage priorities, and moodboards suited to HOS units, private apartments, and resale flats where every square foot matters.",
+        "Start with layout, storage, and moodboards suited to compact homes.",
     },
     {
       icon: MessageSquare,
       title: "Faster Client Communication",
       description:
-        "Move from inspiration to consultation with a cleaner brief, fewer back-and-forth messages, and a more actionable starting point for your contractor or design team.",
+        "Move from ideas to consultation with a cleaner brief and fewer back-and-forth messages.",
     },
   ];
 
@@ -42,19 +42,19 @@ export function Home() {
       step: "1",
       title: "Choose A HK-Ready Direction",
       description:
-        "Start with room ideas, storage logic, and finish direction that make sense for compact Hong Kong layouts.",
+        "Start with room ideas and finishes that fit compact Hong Kong layouts.",
     },
     {
       step: "2",
       title: "Build Your Budget Range",
       description:
-        "Turn your preferred direction into a more realistic renovation band for a flat, HOS unit, or family apartment.",
+        "Turn your direction into a realistic renovation range.",
     },
     {
       step: "3",
       title: "Brief The Project Faster",
       description:
-        "Use the moodboard, room priority, and project notes to shorten the first consultation and reduce vague discussion.",
+        "Use moodboards and notes to shorten the first consultation.",
     },
     {
       step: "4",
@@ -76,19 +76,19 @@ export function Home() {
       icon: House,
       title: "Start With The Right Flat Priority",
       description:
-        "Help visitors decide whether the biggest impact should begin with the living room, kitchen, bedroom, or bathroom based on Hong Kong living patterns and budget.",
+        "Help visitors choose the best room to start with.",
     },
     {
       icon: Paintbrush,
       title: "Choose A Style That Fits Smaller Homes",
       description:
-        "Turn loose preferences like Modern Minimal, Japandi, Modern Luxury, or Korean Soft into something that works in tighter city layouts.",
+        "Turn loose preferences into a style that works in tighter layouts.",
     },
     {
       icon: Lightbulb,
       title: "Turn Browsing Into A Practical Brief",
       description:
-        "Give undecided traffic a clearer first brief before asking them to commit to measurements, drawings, or a full quotation request.",
+        "Give undecided visitors a clearer brief before they request a quotation.",
     },
   ];
 
@@ -114,9 +114,9 @@ export function Home() {
   ];
 
   const heroProof = [
-    "Built for Hong Kong flats, HOS units, and resale homes",
-    "Moodboards that focus on storage, zoning, and finish practicality",
-    "Estimate and lead capture that move into quotation faster",
+    "Built for Hong Kong flats and resale homes",
+    "Moodboards focused on storage and zoning",
+    "Estimate and lead capture in one flow",
   ];
 
   return (
@@ -133,17 +133,15 @@ export function Home() {
           <div className="max-w-3xl pt-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#D9CFC7] bg-white/70 px-4 py-2 text-sm text-[#7A6751] shadow-sm animate-reveal-up">
               <Sparkles className="h-4 w-4" />
-              Hong Kong interior direction, quotation, and lead capture in one journey
+              Hong Kong renovation planning in one journey
             </div>
 
             <h1 className="mt-6 text-5xl leading-[1.05] text-[#3F352D] md:text-7xl animate-reveal-up animation-delay-150">
-              Turn “still thinking about renovation” into a clear Hong Kong-ready starting brief.
+              Turn renovation ideas into a clear starting brief.
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#6E6258] md:text-xl animate-reveal-up animation-delay-300">
-              Help owners of private apartments, HOS units, and resale flats
-              explore better room priorities, moodboards, and budget logic
-              before the first contractor conversation becomes messy.
+              Help flat owners explore room priorities, moodboards, and budget logic before the first contractor conversation gets messy.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4 animate-reveal-up animation-delay-450">
@@ -225,7 +223,7 @@ export function Home() {
               </div>
               <div className="mt-4 text-4xl">3 paths</div>
               <div className="mt-2 text-sm text-[#EFE9E3]">
-                Ideas, estimate, and consultation now sit in one visible flow for Hong Kong residential enquiries.
+                Ideas, estimate, and consultation in one flow.
               </div>
               <div className="mt-5 overflow-hidden rounded-[1rem]">
                 <img
@@ -268,9 +266,7 @@ export function Home() {
                 Not ready for a quotation yet?
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Some visitors are still exploring what to renovate, how much to
-                spend, and what style fits their space. Give them a lighter
-                first step instead of losing them.
+                Some visitors are still deciding what to renovate, how much to spend, and what style fits. Give them a lighter first step.
               </p>
               <Link
                 to="/ideas"
@@ -320,8 +316,7 @@ export function Home() {
               Why Choose Pydesignhk?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              We're revolutionizing the renovation industry with transparency,
-              technology, and trust.
+              A clearer way to plan, price, and track renovation work.
             </p>
           </div>
 
@@ -355,7 +350,7 @@ export function Home() {
           <div className="text-center mb-16">
             <h2 className="text-4xl mb-4 text-gray-900">How It Works</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              A simple, transparent process from estimate to completion
+              From ideas to estimate to delivery
             </p>
           </div>
 
@@ -392,11 +387,7 @@ export function Home() {
             <div>
               <h2 className="text-4xl mb-6 text-gray-900">Our Mission</h2>
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                To provide a transparent and user-friendly digital platform that
-                enables customers to obtain reliable renovation cost estimates and
-                track project progress in real time, improving trust,
-                communication, and decision-making in the interior renovation
-                process.
+                Make renovation pricing and project updates clearer, faster, and easier to trust.
               </p>
               <ul className="space-y-4">
                 {[
@@ -423,8 +414,7 @@ export function Home() {
           <div className="text-center text-white">
             <h2 className="text-4xl mb-6">Ready to Start Your Renovation?</h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Get your free estimate in minutes and take the first step towards
-              your dream space.
+              Get a clear estimate and take the first step.
             </p>
             <Link
               to="/estimate"
