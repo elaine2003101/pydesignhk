@@ -63,6 +63,16 @@ type QuizQuestion = {
   options: QuizOption[];
 };
 
+type LeadFormState = {
+  name: string;
+  email: string;
+  contact: string;
+  requestType: string;
+  notes: string;
+};
+
+type LeadFormErrors = Partial<Record<keyof LeadFormState, string>>;
+
 const quizQuestions: QuizQuestion[] = [
   {
     id: "focus-room",
@@ -517,7 +527,8 @@ export function Inspiration() {
   const [selectedStyle, setSelectedStyle] = useState(styleOptions[0].id);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
-  const [leadForm, setLeadForm] = useState({
+  const [leadFormErrors, setLeadFormErrors] = useState<LeadFormErrors>({});
+  const [leadForm, setLeadForm] = useState<LeadFormState>({
     name: "",
     email: "",
     contact: "",
@@ -648,8 +659,55 @@ export function Inspiration() {
     });
   };
 
+  const getLeadFieldClassName = (hasError: boolean) =>
+    `w-full rounded-xl px-4 py-3 outline-none transition-all ${
+      hasError
+        ? "border border-red-400 bg-red-50 focus:border-red-500"
+        : "border border-gray-300 bg-white focus:border-blue-600"
+    }`;
+
+  const updateLeadFormField = <K extends keyof LeadFormState>(
+    key: K,
+    value: LeadFormState[K],
+  ) => {
+    setLeadForm((current) => ({ ...current, [key]: value }));
+    setLeadFormErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const validateLeadForm = (form: LeadFormState) => {
+    const errors: LeadFormErrors = {};
+
+    if (!form.name.trim()) {
+      errors.name = "Name is required.";
+    }
+
+    if (!form.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+
+    if (!form.contact.trim()) {
+      errors.contact = "WhatsApp / phone is required.";
+    }
+
+    return errors;
+  };
+
   const handleLeadSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const errors = validateLeadForm(leadForm);
+
+    if (Object.keys(errors).length > 0) {
+      setLeadFormErrors(errors);
+      toast.error("Please fill in the required fields.");
+      return;
+    }
+
     const leadEntry = {
       id: createLeadId(),
       ...leadForm,
@@ -687,6 +745,7 @@ export function Inspiration() {
       requestType: "moodboard",
       notes: "",
     });
+    setLeadFormErrors({});
   };
 
   const handleUseMoodboard = (moodboard: (typeof presetMoodboards)[number]) => {
@@ -1394,57 +1453,62 @@ export function Inspiration() {
               </p>
 
               <form onSubmit={handleLeadSubmit} className="space-y-6">
+                <div className="text-sm text-gray-500">
+                  Required fields are marked with <span className="text-red-500">*</span>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="lead-name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Name
+                      Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="lead-name"
                       type="text"
-                      required
                       value={leadForm.name}
-                      onChange={(event) =>
-                        setLeadForm({ ...leadForm, name: event.target.value })
-                      }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
+                      onChange={(event) => updateLeadFormField("name", event.target.value)}
+                      className={getLeadFieldClassName(Boolean(leadFormErrors.name))}
                       placeholder="Client name"
                     />
+                    {leadFormErrors.name && (
+                      <p className="mt-2 text-sm text-red-600">{leadFormErrors.name}</p>
+                    )}
                   </div>
 
                   <div>
                     <label htmlFor="lead-email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
+                      Email <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="lead-email"
                       type="email"
-                      required
                       value={leadForm.email}
-                      onChange={(event) =>
-                        setLeadForm({ ...leadForm, email: event.target.value })
-                      }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
+                      onChange={(event) => updateLeadFormField("email", event.target.value)}
+                      className={getLeadFieldClassName(Boolean(leadFormErrors.email))}
                       placeholder="name@example.com"
                     />
+                    {leadFormErrors.email && (
+                      <p className="mt-2 text-sm text-red-600">{leadFormErrors.email}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="lead-contact" className="block text-sm font-medium text-gray-700 mb-2">
-                      WhatsApp / Phone
+                      WhatsApp / Phone <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="lead-contact"
                       type="text"
                       value={leadForm.contact}
-                      onChange={(event) =>
-                        setLeadForm({ ...leadForm, contact: event.target.value })
-                      }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
+                      onChange={(event) => updateLeadFormField("contact", event.target.value)}
+                      className={getLeadFieldClassName(Boolean(leadFormErrors.contact))}
                       placeholder="+852 ..."
                     />
+                    {leadFormErrors.contact && (
+                      <p className="mt-2 text-sm text-red-600">{leadFormErrors.contact}</p>
+                    )}
                   </div>
 
                   <div>
@@ -1455,9 +1519,9 @@ export function Inspiration() {
                       id="lead-request-type"
                       value={leadForm.requestType}
                       onChange={(event) =>
-                        setLeadForm({ ...leadForm, requestType: event.target.value })
+                        updateLeadFormField("requestType", event.target.value)
                       }
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600 bg-white"
+                      className={getLeadFieldClassName(false)}
                     >
                       <option value="moodboard">Moodboard</option>
                       <option value="consultation">Consultation</option>
@@ -1474,9 +1538,7 @@ export function Inspiration() {
                     id="lead-notes"
                     rows={5}
                     value={leadForm.notes}
-                    onChange={(event) =>
-                      setLeadForm({ ...leadForm, notes: event.target.value })
-                    }
+                    onChange={(event) => updateLeadFormField("notes", event.target.value)}
                     className="w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
                     placeholder="Any goals, preferred timeline, or property details"
                   />

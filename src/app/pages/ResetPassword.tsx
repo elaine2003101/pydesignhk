@@ -8,10 +8,49 @@ export function ResetPassword() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [hasRecoverySession, setHasRecoverySession] = useState(false);
+  const [errors, setErrors] = useState<{
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
+
+  const getInputClassName = (hasError: boolean) =>
+    `w-full py-3 rounded-lg outline-none transition-all ${
+      hasError
+        ? "border border-red-400 bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400"
+        : "border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+    }`;
+
+  const updateField = (key: "password" | "confirmPassword", value: string) => {
+    setFormData((current) => ({ ...current, [key]: value }));
+    setErrors((current) => {
+      const next = { ...current };
+      delete next.password;
+      delete next.confirmPassword;
+      return next;
+    });
+  };
+
+  const validateForm = () => {
+    const nextErrors: { password?: string; confirmPassword?: string } = {};
+
+    if (!formData.password.trim()) {
+      nextErrors.password = "New password is required.";
+    } else if (formData.password.length < 8) {
+      nextErrors.password = "Password must be at least 8 characters.";
+    }
+
+    if (!formData.confirmPassword.trim()) {
+      nextErrors.confirmPassword = "Please confirm your password.";
+    } else if (formData.password !== formData.confirmPassword) {
+      nextErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    return nextErrors;
+  };
 
   useEffect(() => {
     if (!supabase) {
@@ -47,18 +86,15 @@ export function ResetPassword() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    const nextErrors = validateForm();
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Please fill in the required fields.");
+      return;
+    }
+
     if (!isSupabaseConfigured || !supabase) {
       toast.error("Supabase is not configured yet.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -110,44 +146,45 @@ export function ResetPassword() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                New Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(event) =>
-                    setFormData({ ...formData, password: event.target.value })
-                  }
-                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                  placeholder="Minimum 8 characters"
-                />
-              </div>
+            <div className="text-sm text-gray-500">
+              Required fields are marked with <span className="text-red-500">*</span>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
+                New Password <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className={`h-5 w-5 ${errors.password ? "text-red-400" : "text-gray-400"}`} />
+                </div>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(event) => updateField("password", event.target.value)}
+                  className={`${getInputClassName(Boolean(errors.password))} pl-10 pr-3`}
+                  placeholder="Minimum 8 characters"
+                />
+              </div>
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
-                required
                 value={formData.confirmPassword}
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    confirmPassword: event.target.value,
-                  })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                onChange={(event) => updateField("confirmPassword", event.target.value)}
+                className={`${getInputClassName(Boolean(errors.confirmPassword))} px-4`}
                 placeholder="Repeat your password"
               />
+              {errors.confirmPassword && (
+                <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
 
             <button

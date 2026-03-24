@@ -12,9 +12,28 @@ export function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const inputClassName = `w-full pl-10 pr-3 py-3 rounded-lg outline-none transition-all ${
+    error
+      ? "border border-red-400 bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400"
+      : "border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+  }`;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!email.trim()) {
+      setError("Email address is required.");
+      toast.error("Please fill in the required field.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Enter a valid email address.");
+      toast.error("Please enter a valid email.");
+      return;
+    }
 
     if (!isSupabaseConfigured || !supabase) {
       toast.error("Supabase is not configured yet.");
@@ -61,23 +80,30 @@ export function ForgotPassword() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="text-sm text-gray-500">
+              Required fields are marked with <span className="text-red-500">*</span>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className={`h-5 w-5 ${error ? "text-red-400" : "text-gray-400"}`} />
                 </div>
                 <input
                   type="email"
-                  required
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setError("");
+                  }}
+                  className={inputClassName}
                   placeholder="you@example.com"
                 />
               </div>
+              {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
             </div>
 
             <button

@@ -13,13 +13,53 @@ export function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  const getInputClassName = (hasError: boolean) =>
+    `block w-full py-3 rounded-lg outline-none transition-all ${
+      hasError
+        ? "border border-red-400 bg-red-50 focus:ring-2 focus:ring-red-300 focus:border-red-400"
+        : "border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+    }`;
+
+  const updateField = (key: "email" | "password", value: string) => {
+    setFormData((current) => ({ ...current, [key]: value }));
+    setErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const validateForm = () => {
+    const nextErrors: { email?: string; password?: string } = {};
+
+    if (!formData.email.trim()) {
+      nextErrors.email = "Email address is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (!formData.password.trim()) {
+      nextErrors.password = "Password is required.";
+    }
+
+    return nextErrors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const nextErrors = validateForm();
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Please fill in the required fields.");
+      return;
+    }
 
     if (!isSupabaseConfigured || !supabase) {
       toast.error("Supabase is not configured yet. Add your env keys first.");
@@ -108,32 +148,36 @@ export function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="text-sm text-gray-500">
+              Required fields are marked with <span className="text-red-500">*</span>
+            </div>
+
             {/* Email Input */}
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Email Address
+                Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className={`h-5 w-5 ${errors.email ? "text-red-400" : "text-gray-400"}`} />
                 </div>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                  onChange={(e) => updateField("email", e.target.value)}
+                  className={`${getInputClassName(Boolean(errors.email))} pl-10 pr-3`}
                   placeholder="you@example.com"
                 />
               </div>
+              {errors.email && (
+                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -142,26 +186,26 @@ export function Login() {
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className={`h-5 w-5 ${errors.password ? "text-red-400" : "text-gray-400"}`} />
                 </div>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  required
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                  onChange={(e) => updateField("password", e.target.value)}
+                  className={`${getInputClassName(Boolean(errors.password))} pl-10 pr-3`}
                   placeholder="••••••••"
                 />
               </div>
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
 
             {/* Submit Button */}

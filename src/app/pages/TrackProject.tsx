@@ -9,7 +9,6 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { AppUser, getCurrentAppUser } from "../lib/auth";
 
 interface Project {
@@ -75,14 +74,14 @@ export function TrackProject() {
         date: "2026-03-20",
         message: "Kitchen cabinets installation completed. Proceeding with countertop installation.",
         photos: [
-          "https://images.unsplash.com/photo-1772567732969-c1506edf80a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraXRjaGVuJTIwcmVub3ZhdGlvbiUyMG1vZGVybnxlbnwxfHx8fDE3NzQwMTg0NzN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+          "https://images.unsplash.com/photo-1772567732969-c1506edf80a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraXRjaGVuJTIwcmVub3ZhdGlvbiUyMG1vZGVybnxlbnwxfHx8fDE3NzQwMTg0NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
         ],
       },
       {
         date: "2026-03-15",
         message: "Living room flooring installation in progress. Expected completion by March 18.",
         photos: [
-          "https://images.unsplash.com/photo-1707299231603-6c0a93e0f7fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsaXZpbmclMjByb29tJTIwaW50ZXJpb3IlMjBlbGVnYW50fGVufDF8fHx8MTc3NDEwNjAyOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+          "https://images.unsplash.com/photo-1707299231603-6c0a93e0f7fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsaXZpbmclMjByb29tJTIwaW50ZXJpb3IlMjBlbGVnYW50fGVufDF8fHx8MTc3NDEwNjAyOXww&ixlib=rb-4.1.0&q=80&w=1080",
         ],
       },
       {
@@ -93,7 +92,7 @@ export function TrackProject() {
         date: "2026-02-20",
         message: "Demolition phase completed successfully. Ready for installation phase.",
         photos: [
-          "https://images.unsplash.com/photo-1760331840595-72c9681e7e71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjByZW5vdmF0aW9uJTIwY29uc3RydWN0aW9uJTIwcHJvZ3Jlc3N8ZW58MXx8fHwxNzc0MTA2NjQxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+          "https://images.unsplash.com/photo-1760331840595-72c9681e7e71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjByZW5vdmF0aW9uJTIwY29uc3RydWN0aW9uJTIwcHJvZ3Jlc3N8ZW58MXx8fHwxNzc0MTA2NjQxfDA&ixlib=rb-4.1.0&q=80&w=1080",
         ],
       },
     ],
@@ -402,7 +401,7 @@ export function TrackProject() {
                           key={photoIndex}
                           className="rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
                         >
-                          <ImageWithFallback
+                          <img
                             src={photo}
                             alt={`Progress photo ${photoIndex + 1}`}
                             className="w-full h-48 object-cover"
