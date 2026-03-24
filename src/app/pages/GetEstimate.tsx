@@ -67,23 +67,38 @@ const roomFields = [
 function mapLeadStyleToDirection(style: string): StyleDirection {
   const normalized = style.toLowerCase();
 
-  if (normalized.includes("luxury")) {
-    return "luxury";
+  if (normalized.includes("modern luxury") || normalized.includes("luxury")) {
+    return "modern-luxury";
   }
   if (normalized.includes("japandi")) {
     return "japandi";
   }
-  if (normalized.includes("storage")) {
-    return "storage-focused";
+  if (normalized.includes("industrial")) {
+    return "industrial";
   }
-  if (normalized.includes("dark")) {
-    return "dark-contrast";
+  if (normalized.includes("scandinavian") || normalized.includes("nordic")) {
+    return "scandinavian";
   }
-  if (normalized.includes("minimal") || normalized.includes("calm")) {
-    return "minimal";
+  if (
+    normalized.includes("korean") ||
+    normalized.includes("feminine") ||
+    normalized.includes("soft")
+  ) {
+    return "korean-soft";
+  }
+  if (
+    normalized.includes("minimal") ||
+    normalized.includes("calm") ||
+    normalized.includes("storage") ||
+    normalized.includes("smart")
+  ) {
+    return "modern-minimal";
+  }
+  if (normalized.includes("dark") || normalized.includes("contrast")) {
+    return "industrial";
   }
 
-  return "modern";
+  return "modern-minimal";
 }
 
 function formatCurrency(amount: number) {
@@ -166,7 +181,7 @@ export function GetEstimate() {
     livingRooms: "1",
     scope: "full" as RenovationScope,
     pricingTier: "standard" as PricingTier,
-    style: "modern" as StyleDirection,
+    style: "modern-minimal" as StyleDirection,
     addOns: [] as string[],
     projectBrief: "",
   });
@@ -526,12 +541,12 @@ export function GetEstimate() {
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
                   >
-                    <option value="modern">Modern</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="luxury">Luxury</option>
+                    <option value="modern-minimal">Modern Minimal</option>
                     <option value="japandi">Japandi</option>
-                    <option value="storage-focused">Storage-focused</option>
-                    <option value="dark-contrast">Dark Contrast</option>
+                    <option value="modern-luxury">Modern Luxury</option>
+                    <option value="scandinavian">Scandinavian</option>
+                    <option value="industrial">Industrial</option>
+                    <option value="korean-soft">Korean Soft / Feminine</option>
                   </select>
                 </div>
               </div>

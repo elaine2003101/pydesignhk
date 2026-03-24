@@ -82,7 +82,7 @@ export function Home() {
       icon: Paintbrush,
       title: "Choose A Style That Fits Smaller Homes",
       description:
-        "Turn loose preferences like Japandi, boutique luxury, or storage-focused minimalism into something that works in tighter city layouts.",
+        "Turn loose preferences like Modern Minimal, Japandi, Modern Luxury, or Korean Soft into something that works in tighter city layouts.",
     },
     {
       icon: Lightbulb,
@@ -94,7 +94,7 @@ export function Home() {
 
   const heroBoards = [
     {
-      title: "Warm Modern HK Kitchen",
+      title: "Japandi HK Kitchen",
       image:
         "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
       meta: "Compact flat upgrade · HKD 180k - 380k",
@@ -106,7 +106,7 @@ export function Home() {
       meta: "Built-in storage + lighter zoning",
     },
     {
-      title: "Boutique Bathroom Upgrade",
+      title: "Modern Luxury Bathroom Upgrade",
       image:
         "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
       meta: "Wet-area friendly material direction",

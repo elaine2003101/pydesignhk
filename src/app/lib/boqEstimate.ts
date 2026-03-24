@@ -6,12 +6,12 @@ export type PropertyType =
   | "resale-flat"
   | "village-house";
 export type StyleDirection =
-  | "modern"
-  | "minimal"
-  | "luxury"
+  | "modern-minimal"
   | "japandi"
-  | "storage-focused"
-  | "dark-contrast";
+  | "modern-luxury"
+  | "scandinavian"
+  | "industrial"
+  | "korean-soft";
 
 export interface BoqInput {
   propertyType: PropertyType;
@@ -78,12 +78,12 @@ const propertyTypeFactor: Record<PropertyType, number> = {
 };
 
 const styleFactor: Record<StyleDirection, number> = {
-  modern: 1.02,
-  minimal: 1,
-  luxury: 1.18,
+  "modern-minimal": 1.01,
   japandi: 1.08,
-  "storage-focused": 1.1,
-  "dark-contrast": 1.12,
+  "modern-luxury": 1.18,
+  scandinavian: 1.03,
+  industrial: 1.09,
+  "korean-soft": 1.05,
 };
 
 const scopeAreaFactor: Record<RenovationScope, number> = {
