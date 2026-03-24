@@ -88,7 +88,7 @@ export function Home() {
     <div className="bg-[#F9F8F6] text-[#1C1C1C]">
       <section className="relative min-h-[88vh] overflow-hidden">
         <img
-          src="/hero-home-banner.jpg"
+          src="/hero-home-banner.jpeg"
           alt="Artistic interior"
           className="absolute inset-0 h-full w-full object-cover"
         />
