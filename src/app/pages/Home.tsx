@@ -1,95 +1,39 @@
 import { Link } from "react-router";
 import {
   ArrowUpRight,
-  DollarSign,
-  LineChart,
-  MessageSquare,
   Calculator,
-  BarChart3,
   ArrowRight,
-  CheckCircle,
   Lightbulb,
-  Paintbrush,
-  House,
   Sparkles,
   Sofa,
 } from "lucide-react";
 
 export function Home() {
-  const features = [
+  const quickPaths = [
     {
-      icon: DollarSign,
-      title: "Transparent Quotation Logic",
-      description:
-        "See clearer renovation ranges for Hong Kong flats before the scope gets inflated.",
+      title: "Need ideas first",
+      description: "Use the guided flow to find a direction.",
+      cta: "Start Ideas",
+      to: "/ideas",
     },
     {
-      icon: LineChart,
-      title: "Compact-Space Planning Support",
-      description:
-        "Start with layout, storage, and moodboards suited to compact homes.",
+      title: "Need a budget range",
+      description: "Build a BOQ-style estimate for your flat.",
+      cta: "Get Estimate",
+      to: "/estimate",
     },
     {
-      icon: MessageSquare,
-      title: "Faster Client Communication",
-      description:
-        "Move from ideas to consultation with a cleaner brief and fewer back-and-forth messages.",
-    },
-  ];
-
-  const howItWorks = [
-    {
-      step: "1",
-      title: "Choose A Direction",
-      description:
-        "Start with room ideas and finishes that fit compact Hong Kong layouts.",
-    },
-    {
-      step: "2",
-      title: "Build Your Budget Range",
-      description:
-        "Turn your direction into a realistic renovation range.",
-    },
-    {
-      step: "3",
-      title: "Brief The Project Faster",
-      description:
-        "Use moodboards and notes to shorten the first consultation.",
-    },
-    {
-      step: "4",
-      title: "Track Delivery",
-      description:
-        "Once works start, keep the scope, milestone updates, and follow-up communication in one place.",
+      title: "Already started works",
+      description: "Check progress and project updates.",
+      cta: "Track Project",
+      to: "/track",
     },
   ];
 
-  const stats = [
-    { value: "100+", label: "Projects Completed" },
-    { value: "98%", label: "On-Time Delivery" },
-    { value: "100%", label: "Transparent Pricing" },
-    { value: "4.9/5", label: "Customer Rating" },
-  ];
-
-  const ideaTracks = [
-    {
-      icon: House,
-      title: "Start With The Right Flat Priority",
-      description:
-        "Help visitors choose the best room to start with.",
-    },
-    {
-      icon: Paintbrush,
-      title: "Choose A Style That Fits Smaller Homes",
-      description:
-        "Turn loose preferences into a style that works in tighter layouts.",
-    },
-    {
-      icon: Lightbulb,
-      title: "Turn Browsing Into A Practical Brief",
-      description:
-        "Give undecided visitors a clearer brief before they request a quotation.",
-    },
+  const benefits = [
+    "Built for Hong Kong flats",
+    "Clearer style and budget direction",
+    "Faster path to estimate",
   ];
 
   const heroBoards = [
@@ -113,12 +57,6 @@ export function Home() {
     },
   ];
 
-  const heroProof = [
-    "Built for Hong Kong flats and resale homes",
-    "Moodboards focused on storage and zoning",
-    "Estimate and lead capture in one flow",
-  ];
-
   return (
     <div>
       {/* Hero Section */}
@@ -133,15 +71,15 @@ export function Home() {
           <div className="max-w-3xl pt-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#D9CFC7] bg-white/70 px-4 py-2 text-sm text-[#7A6751] shadow-sm animate-reveal-up">
               <Sparkles className="h-4 w-4" />
-              Hong Kong renovation planning in one journey
+              Hong Kong renovation planning
             </div>
 
             <h1 className="mt-6 text-5xl leading-[1.05] text-[#3F352D] md:text-7xl animate-reveal-up animation-delay-150">
-              Turn renovation ideas into a clear starting brief.
+              Start your renovation with a clear direction.
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#6E6258] md:text-xl animate-reveal-up animation-delay-300">
-              Help flat owners explore room priorities, moodboards, and budget logic before the first contractor conversation gets messy.
+              Ideas, estimate, and project tracking for Hong Kong homes.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4 animate-reveal-up animation-delay-450">
@@ -150,26 +88,19 @@ export function Home() {
                 className="inline-flex items-center gap-2 rounded-2xl bg-[#8F775C] px-7 py-4 text-white shadow-lg transition-transform hover:-translate-y-0.5 hover:bg-[#7A6751]"
               >
                 <Lightbulb className="w-5 h-5" />
-                Browse Moodboards
+                Start Ideas
               </Link>
               <Link
                 to="/estimate"
                 className="inline-flex items-center gap-2 rounded-2xl border border-[#D9CFC7] bg-white px-7 py-4 text-[#5C4C40] shadow-sm transition-transform hover:-translate-y-0.5 hover:border-[#C9B59C]"
               >
                 <Calculator className="w-5 h-5" />
-                Build Estimate
-              </Link>
-              <Link
-                to="/track"
-                className="inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-[#7A6751] transition-colors hover:text-[#4F4338]"
-              >
-                <BarChart3 className="w-5 h-5" />
-                Track Project
+                Get Estimate
               </Link>
             </div>
 
             <div className="mt-10 grid gap-3 sm:grid-cols-3 animate-reveal-up animation-delay-600">
-              {heroProof.map((item) => (
+              {benefits.map((item) => (
                 <div
                   key={item}
                   className="rounded-2xl border border-[#E6DDD5] bg-white/80 px-4 py-4 text-sm text-[#5F544B] shadow-sm"
@@ -218,13 +149,9 @@ export function Home() {
             </div>
 
             <div className="absolute bottom-6 right-0 w-[48%] rounded-[1.75rem] border border-[#D9CFC7] bg-[#4F4338] p-5 text-white shadow-[0_24px_60px_rgba(76,61,46,0.2)] animate-float animation-delay-600">
-              <div className="text-xs uppercase tracking-[0.22em] text-[#D9CFC7]">
-                Conversion Snapshot
-              </div>
+              <div className="text-xs uppercase tracking-[0.22em] text-[#D9CFC7]">Quick start</div>
               <div className="mt-4 text-4xl">3 paths</div>
-              <div className="mt-2 text-sm text-[#EFE9E3]">
-                Ideas, estimate, and consultation in one flow.
-              </div>
+              <div className="mt-2 text-sm text-[#EFE9E3]">Ideas, estimate, or tracking.</div>
               <div className="mt-5 overflow-hidden rounded-[1rem]">
                 <img
                   src={heroBoards[2].image}
@@ -237,190 +164,63 @@ export function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="bg-white py-16 border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Idea Starter Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-blue-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 items-start">
-            <div className="lg:sticky lg:top-24">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 mb-6">
-                <Lightbulb className="w-4 h-4" />
-                For Cold Traffic
-              </div>
-              <h2 className="text-4xl mb-5 text-gray-900">
-                Not ready for a quotation yet?
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-8">
-                Some visitors are still deciding what to renovate, how much to spend, and what style fits. Give them a lighter first step.
-              </p>
-              <Link
-                to="/ideas"
-                className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg"
-              >
-                Explore Idea Starter
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {ideaTracks.map((track) => {
-                const Icon = track.icon;
-
-                return (
-                  <div
-                    key={track.title}
-                    className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
-                      <Icon className="w-7 h-7" />
-                    </div>
-                    <h3 className="text-2xl text-gray-900 mb-4">{track.title}</h3>
-                    <p className="text-gray-600 leading-relaxed mb-6">
-                      {track.description}
-                    </p>
-                    <Link
-                      to="/ideas"
-                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                    >
-                      See Suggestions
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Value Proposition Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl mb-4 text-gray-900">
-              Why Choose Pydesignhk?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              A clearer way to plan, price, and track renovation work.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100"
-                >
-                  <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                    <Icon className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-2xl mb-4 text-gray-900">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
       <section className="py-20 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl mb-4 text-gray-900">How It Works</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              From ideas to estimate to delivery
+          <div className="mb-10 max-w-2xl">
+            <h2 className="text-4xl text-gray-900">Choose your path</h2>
+            <p className="mt-3 text-lg text-[#6E6258]">
+              Keep it simple and start where you are.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {howItWorks.map((item, index) => (
-              <div key={index} className="relative">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold shadow-lg">
-                    {item.step}
-                  </div>
-                  <h3 className="text-xl mb-3 text-gray-900">{item.title}</h3>
-                  <p className="text-gray-600">{item.description}</p>
-                </div>
-                {index < howItWorks.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-blue-600 to-blue-300 -ml-8" />
-                )}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {quickPaths.map((path) => (
+              <div
+                key={path.title}
+                className="rounded-[2rem] border border-[#E6DDD5] bg-[#F9F8F6] p-8 shadow-sm"
+              >
+                <div className="text-2xl text-[#3F352D]">{path.title}</div>
+                <p className="mt-3 text-[#6E6258]">{path.description}</p>
+                <Link
+                  to={path.to}
+                  className="mt-6 inline-flex items-center gap-2 text-[#8F775C] transition-colors hover:text-[#7A6751]"
+                >
+                  {path.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Mission Statement Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-16 bg-[#F5F3EF]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="rounded-2xl overflow-hidden shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1696861270495-7f35c35c3273?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFuc3BhcmVudCUyMGJ1c2luZXNzJTIwaGFuZHNoYWtlJTIwdHJ1c3R8ZW58MXx8fHwxNzc0MTA2NjQzfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Transparent business"
-                className="w-full h-[500px] object-cover"
-              />
-            </div>
-            <div>
-              <h2 className="text-4xl mb-6 text-gray-900">Our Mission</h2>
-              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                Make renovation pricing and project updates clearer, faster, and easier to trust.
-              </p>
-              <ul className="space-y-4">
-                {[
-                  "Transparent pricing with no hidden costs",
-                  "Real-time project tracking and updates",
-                  "Direct communication with contractors",
-                  "Quality assurance and accountability",
-                  "Data-driven insights for better decisions",
-                ].map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {benefits.map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-[#E6DDD5] bg-white px-6 py-5 text-[#5F544B]"
+              >
+                {item}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
+      <section className="py-20 bg-[#4F4338]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
-            <h2 className="text-4xl mb-6">Ready to Start Your Renovation?</h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Get a clear estimate and take the first step.
+            <h2 className="text-4xl mb-5">Ready to start?</h2>
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-[#EFE9E3]">
+              Get a clearer renovation estimate for your home.
             </p>
             <Link
               to="/estimate"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors shadow-lg text-lg font-medium"
+              className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-lg font-medium text-[#4F4338] shadow-lg transition-colors hover:bg-[#F5F3EF]"
             >
-              Get Free Estimate
+              Get Estimate
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
