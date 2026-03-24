@@ -103,6 +103,12 @@ export function TrackProject() {
       "Final painting touch-ups (April 1-5)",
     ],
   });
+  const budgetUsagePercentage =
+    (project.actualCost / project.estimatedCost) * 100;
+  const budgetCircleRadius = 76;
+  const budgetCircleCircumference = 2 * Math.PI * budgetCircleRadius;
+  const budgetCircleOffset =
+    budgetCircleCircumference * (1 - budgetUsagePercentage / 100);
 
   useEffect(() => {
     getCurrentAppUser().then((currentUser) => {
@@ -330,33 +336,36 @@ export function TrackProject() {
             <div>
               <div className="h-64 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="relative inline-flex items-center justify-center w-48 h-48">
-                    <svg className="w-48 h-48 transform -rotate-90">
+                  <div className="relative inline-flex items-center justify-center w-52 h-52">
+                    <svg
+                      viewBox="0 0 200 200"
+                      className="h-52 w-52 overflow-visible -rotate-90 transform"
+                    >
                       <circle
-                        cx="96"
-                        cy="96"
-                        r="88"
+                        cx="100"
+                        cy="100"
+                        r={budgetCircleRadius}
                         stroke="#e5e7eb"
                         strokeWidth="16"
                         fill="none"
                       />
                       <circle
-                        cx="96"
-                        cy="96"
-                        r="88"
+                        cx="100"
+                        cy="100"
+                        r={budgetCircleRadius}
                         stroke="#3b82f6"
                         strokeWidth="16"
                         fill="none"
-                        strokeDasharray={`${
-                          2 * Math.PI * 88 * (project.actualCost / project.estimatedCost)
-                        } ${2 * Math.PI * 88}`}
+                        strokeDasharray={budgetCircleCircumference}
+                        strokeDashoffset={budgetCircleOffset}
+                        strokeLinecap="round"
                         className="transition-all duration-500"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-gray-900">
-                          {((project.actualCost / project.estimatedCost) * 100).toFixed(1)}%
+                          {budgetUsagePercentage.toFixed(1)}%
                         </div>
                         <div className="text-sm text-gray-600">Used</div>
                       </div>
