@@ -553,11 +553,21 @@ const fallbackSuggestions = [
   },
 ];
 
+const flowSteps = [
+  { id: 1, label: "Style Quiz", summary: "Answer a few quick questions" },
+  { id: 2, label: "Direction", summary: "Choose room, budget, and style" },
+  { id: 3, label: "Moodboards", summary: "Browse and compare boards" },
+  { id: 4, label: "Contact", summary: "Request a moodboard or call" },
+] as const;
+
+type FlowStep = (typeof flowSteps)[number]["id"];
+
 export function Inspiration() {
   const [selectedRoom, setSelectedRoom] = useState(roomOptions[0].id);
   const [selectedBudget, setSelectedBudget] = useState(budgetOptions[1].id);
   const [selectedStyle, setSelectedStyle] = useState(styleOptions[0].id);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [activeStep, setActiveStep] = useState<FlowStep>(1);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [leadFormErrors, setLeadFormErrors] = useState<LeadFormErrors>({});
   const [leadForm, setLeadForm] = useState<LeadFormState>({
@@ -685,10 +695,7 @@ export function Inspiration() {
   }, [carouselBoards.length, selectedRoom, selectedStyle]);
 
   const openLeadCapture = () => {
-    document.getElementById("lead-capture")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    setActiveStep(4);
   };
 
   const getLeadFieldClassName = (hasError: boolean) =>
@@ -792,10 +799,7 @@ export function Inspiration() {
         : `Preferred moodboard: ${moodboard.title} (${moodboard.fit})`,
     }));
 
-    document.getElementById("lead-capture")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    setActiveStep(4);
 
     toast.success(`${moodboard.title} added to the lead request.`);
   };
@@ -816,10 +820,7 @@ export function Inspiration() {
         : `Quiz result: ${quizResult.board.title} · ${quizResult.board.fit}`,
     }));
 
-    document.getElementById("featured-moodboards")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    setActiveStep(3);
 
     toast.success("Style quiz applied to your moodboard direction.");
   };
@@ -880,8 +881,41 @@ export function Inspiration() {
         </div>
       </section>
 
+      <section className="border-y border-[#E6DDD5] bg-white/75 backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            {flowSteps.map((step) => {
+              const isActive = activeStep === step.id;
+              const isPast = activeStep > step.id;
+
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => setActiveStep(step.id)}
+                  className={`rounded-2xl border px-4 py-4 text-left transition-all ${
+                    isActive
+                      ? "border-[#8F775C] bg-[#F7F1EB] shadow-sm"
+                      : isPast
+                        ? "border-[#D9CFC7] bg-[#F9F8F6]"
+                        : "border-[#E6DDD5] bg-white hover:border-[#D9CFC7]"
+                  }`}
+                >
+                  <div className="text-xs uppercase tracking-[0.18em] text-[#8F775C] mb-2">
+                    Step {step.id}
+                  </div>
+                  <div className="text-lg text-gray-900">{step.label}</div>
+                  <div className="mt-1 text-sm text-gray-500">{step.summary}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {activeStep === 1 && (
           <div className="mb-10 grid grid-cols-1 xl:grid-cols-[1fr_0.9fr] gap-8">
             <div className="rounded-[2rem] border border-[#D9CFC7] bg-white p-8 shadow-sm">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#E6DDD5] bg-[#F9F8F6] px-4 py-2 text-sm text-[#7A6751] mb-6">
@@ -1080,7 +1114,22 @@ export function Inspiration() {
               </div>
             </div>
           </div>
+          )}
 
+          {activeStep === 1 && (
+            <div className="flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveStep(2)}
+                className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
+              >
+                Skip to direction
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {activeStep === 2 && (
           <div className="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-8">
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
               <h2 className="text-3xl text-gray-900 mb-2">Build Your Idea Direction</h2>
@@ -1227,10 +1276,35 @@ export function Inspiration() {
               ))}
             </div>
           </div>
+          )}
+
+          {activeStep === 2 && (
+            <div className="mt-10 flex flex-wrap justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveStep(1)}
+                className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to quiz
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveStep(3)}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white hover:bg-[#7A6751] transition-colors"
+              >
+                Continue to moodboards
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
-      <section id="featured-moodboards" className="pb-20">
+      <section
+        id="featured-moodboards"
+        className={activeStep === 3 ? "py-20" : "hidden"}
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 max-w-3xl">
             <h2 className="text-4xl text-gray-900 mb-4">Ready-Made Moodboards</h2>
@@ -1453,10 +1527,32 @@ export function Inspiration() {
               </div>
             ))}
           </div>
+
+          <div className="mt-10 flex flex-wrap justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveStep(2)}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to direction
+            </button>
+            <button
+              type="button"
+              onClick={openLeadCapture}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white hover:bg-[#7A6751] transition-colors"
+            >
+              Continue to contact
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </section>
 
-      <section id="lead-capture" className="pb-20">
+      <section
+        id="lead-capture"
+        className={activeStep === 4 ? "py-20" : "hidden"}
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8">
             <div className="bg-slate-900 text-white rounded-3xl p-8">
@@ -1593,6 +1689,17 @@ export function Inspiration() {
                 </button>
               </form>
             </div>
+          </div>
+
+          <div className="mt-10">
+            <button
+              type="button"
+              onClick={() => setActiveStep(3)}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to moodboards
+            </button>
           </div>
         </div>
       </section>
