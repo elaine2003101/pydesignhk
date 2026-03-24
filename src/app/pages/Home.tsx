@@ -19,7 +19,7 @@ export function Home() {
   const features = [
     {
       icon: DollarSign,
-      title: "Transparent HK Quotation Logic",
+      title: "Transparent Quotation Logic",
       description:
         "See clearer renovation ranges for Hong Kong flats before the scope gets inflated.",
     },
@@ -40,7 +40,7 @@ export function Home() {
   const howItWorks = [
     {
       step: "1",
-      title: "Choose A HK-Ready Direction",
+      title: "Choose A Direction",
       description:
         "Start with room ideas and finishes that fit compact Hong Kong layouts.",
     },
@@ -65,7 +65,7 @@ export function Home() {
   ];
 
   const stats = [
-    { value: "200+", label: "Projects Completed" },
+    { value: "100+", label: "Projects Completed" },
     { value: "98%", label: "On-Time Delivery" },
     { value: "100%", label: "Transparent Pricing" },
     { value: "4.9/5", label: "Customer Rating" },

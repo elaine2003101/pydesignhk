@@ -134,14 +134,13 @@ export function ResetPassword() {
             </div>
             <h1 className="text-3xl text-gray-900 mb-2">Choose New Password</h1>
             <p className="text-gray-600">
-              Complete the password reset from your email link, then set a new password here.
+              Open the email link, then set a new password here.
             </p>
           </div>
 
           {!hasRecoverySession && (
             <div className="mb-6 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258]">
-              Open the reset-password email link first so Supabase can create a
-              recovery session for this page.
+              Open the reset email link first.
             </div>
           )}
 

@@ -258,7 +258,7 @@ export function GetEstimate() {
     });
 
     setEstimate(boq);
-    toast.success("BOQ estimate generated successfully.");
+    toast.success("BOQ estimate ready.");
   };
 
   const handleSave = () => {
@@ -280,7 +280,7 @@ export function GetEstimate() {
         date: new Date().toISOString(),
       }),
     );
-    toast.success("BOQ estimate saved successfully.");
+    toast.success("Estimate saved.");
   };
 
   const handleRequestConsultation = () => {
@@ -293,7 +293,7 @@ export function GetEstimate() {
       updateIdeaStarterLead(selectedLead.id, { stage: "qualified" });
     }
 
-    toast.success("Consultation request sent. We will review the BOQ and follow up.");
+    toast.success("Consultation requested.");
   };
 
   return (
@@ -305,9 +305,7 @@ export function GetEstimate() {
             <h1 className="text-4xl text-gray-900">HK Residential BOQ Estimate</h1>
           </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Generate a Hong Kong-style residential renovation estimate with
-            category-based BOQ logic, room counts, scope, finish tier, and
-            project notes.
+            Build a Hong Kong residential BOQ with room counts, scope, and finish tier.
           </p>
           <p className="mt-4 text-sm text-gray-500">
             Compulsory fields are marked with <span className="text-red-500">*</span>
@@ -325,7 +323,7 @@ export function GetEstimate() {
                     <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
                     <div>
                       <div className="font-medium text-emerald-900">
-                        Lead loaded from Idea Starter
+                        Lead loaded
                       </div>
                       <div className="text-sm text-emerald-800 mt-1">
                         {selectedLead.name} · {selectedLead.room} · {selectedLead.budget} · {selectedLead.style}
@@ -378,7 +376,7 @@ export function GetEstimate() {
                   value={formData.projectBrief}
                   onChange={(event) => updateField("projectBrief", event.target.value)}
                   className={`${getInputClassName(Boolean(formErrors.projectBrief))} resize-none`}
-                  placeholder="Property condition, special needs, storage requests, management restrictions, or timeline"
+                  placeholder="Property condition, goals, or timeline"
                 />
                 {formErrors.projectBrief && (
                   <p className="mt-2 text-sm text-red-600">{formErrors.projectBrief}</p>
@@ -466,17 +464,17 @@ export function GetEstimate() {
                     {
                       value: "partial",
                       label: "Partial Renovation",
-                      desc: "Selected zones only, usually living / bedroom refresh with some services coordination",
+                      desc: "Selected zones only.",
                     },
                     {
                       value: "kitchen",
                       label: "Kitchen Only",
-                      desc: "Kitchen-focused works with cabinetry, plumbing, finishes, and related electrical scope",
+                      desc: "Kitchen works only.",
                     },
                     {
                       value: "bathroom",
                       label: "Bathroom Only",
-                      desc: "Bathroom-focused wet-area works, sanitary fittings, waterproofing-related allowance, and finishes",
+                      desc: "Bathroom works only.",
                     },
                   ].map((scope) => (
                     <label
@@ -720,9 +718,7 @@ export function GetEstimate() {
                     </button>
                   </div>
                   <p className="text-sm text-gray-600 mt-4">
-                    This is a structured preliminary estimate. Final quotation still depends
-                    on site measurement, management rules, hidden-condition findings, and
-                    selected materials / brands.
+                    Final quotation still depends on site measure, hidden works, and selected materials.
                   </p>
                 </div>
               </>
@@ -731,8 +727,7 @@ export function GetEstimate() {
                 <Calculator className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl text-gray-600 mb-2">No BOQ Yet</h3>
                 <p className="text-gray-500">
-                  Fill in the project inputs and generate the BOQ estimate to see
-                  a more realistic Hong Kong residential cost structure.
+                  Fill in the form to generate the BOQ.
                 </p>
               </div>
             )}

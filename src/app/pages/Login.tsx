@@ -135,15 +135,14 @@ export function Login() {
             <span className="font-bold text-2xl text-gray-900">Pydesignhk</span>
           </div>
           <h2 className="text-3xl text-gray-900 mb-2">Welcome Back</h2>
-          <p className="text-gray-600">Sign in to track your renovation project</p>
+          <p className="text-gray-600">Sign in to continue</p>
         </div>
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {!isSupabaseConfigured && (
             <div className="mb-6 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258]">
-              Supabase keys are not configured yet. Add `VITE_SUPABASE_URL` and
-              `VITE_SUPABASE_ANON_KEY` to enable real signup and login.
+              Add your Supabase keys to enable login.
             </div>
           )}
 
@@ -220,8 +219,7 @@ export function Login() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-600">
-            Email/password login is now backed by Supabase Auth once your
-            environment keys are configured.
+            Email/password login uses Supabase Auth.
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 type="button"

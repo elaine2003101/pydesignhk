@@ -168,14 +168,13 @@ export function Signup() {
             </div>
             <h1 className="text-3xl text-gray-900 mb-2">Create Account</h1>
             <p className="text-gray-600">
-              Set up a real customer account backed by Supabase Auth.
+              Create your account.
             </p>
           </div>
 
           {!isSupabaseConfigured && (
             <div className="mb-6 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258]">
-              Supabase keys are not configured yet. Add `VITE_SUPABASE_URL` and
-              `VITE_SUPABASE_ANON_KEY` before using account creation.
+              Add your Supabase keys before using signup.
             </div>
           )}
 
@@ -277,8 +276,7 @@ export function Signup() {
                 Check your inbox
               </div>
               <div className="mb-3">
-                We sent a confirmation link to `{pendingEmail}`. Open it to
-                activate the account.
+                We sent a confirmation link to `{pendingEmail}`.
               </div>
               <button
                 type="button"

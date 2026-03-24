@@ -121,7 +121,7 @@ export function TrackProject() {
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl text-gray-900 mb-2">Please Log In</h2>
-          <p className="text-gray-600">You need to be logged in to track your project.</p>
+          <p className="text-gray-600">Log in to view your project.</p>
         </div>
       </div>
     );
@@ -169,7 +169,7 @@ export function TrackProject() {
             <BarChart3 className="w-10 h-10 text-blue-600" />
             <h1 className="text-4xl text-gray-900">Project Dashboard</h1>
           </div>
-          <p className="text-gray-600">Welcome back, {user.email}</p>
+          <p className="text-gray-600">{user.email}</p>
         </div>
 
         {/* Project Overview */}

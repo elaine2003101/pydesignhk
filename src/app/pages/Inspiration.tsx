@@ -854,16 +854,14 @@ export function Inspiration() {
                 Not sure how to renovate your Hong Kong flat yet? Start with a direction, not a blind quotation.
               </h1>
               <p className="text-lg md:text-xl text-[#6E6258] max-w-2xl">
-                This page is built for Hong Kong owners comparing ideas for
-                private flats, HOS units, resale apartments, and compact family
-                homes before they are ready to commit.
+                Built for Hong Kong owners still comparing ideas before they commit.
               </p>
             </div>
 
             <div className="bg-white/75 backdrop-blur-sm border border-[#D9CFC7] rounded-3xl p-8 shadow-2xl">
               <h2 className="text-2xl mb-2">What you get</h2>
               <p className="text-[#6E6258] mb-6">
-                A practical starting point you can turn into a quotation or consultation.
+                A practical first step into quotation or consultation.
               </p>
               <div className="space-y-4">
                 {[
@@ -894,9 +892,7 @@ export function Inspiration() {
                 Not sure what you want yet? Answer a few simple questions.
               </h2>
               <p className="text-gray-600 mb-8 max-w-3xl">
-                This works better for visitors who do not know style names yet.
-                Pick what feels right, and we will turn it into a room direction,
-                likely design style, and colour palette suggestion.
+                Pick what feels right and we will suggest a room, style, and palette.
               </p>
 
               <div className="space-y-8">
@@ -968,7 +964,7 @@ export function Inspiration() {
                   </div>
                   <h2 className="text-3xl text-gray-900 mb-2">Your likely direction</h2>
                   <p className="text-gray-600">
-                    We use your answers to suggest a board before you even know the style name.
+                    A board based on your answers.
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white px-4 py-3 text-center border border-[#E6DDD5] min-w-[110px]">
@@ -1077,7 +1073,7 @@ export function Inspiration() {
 
                   {!isQuizReady && (
                     <p className="mt-4 text-sm text-gray-500">
-                      Finish all {quizQuestions.length} questions to lock this recommendation into the moodboard flow.
+                      Finish all {quizQuestions.length} questions to apply this result.
                     </p>
                   )}
                 </div>
@@ -1089,7 +1085,7 @@ export function Inspiration() {
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
               <h2 className="text-3xl text-gray-900 mb-2">Build Your Idea Direction</h2>
               <p className="text-gray-600 mb-8">
-                Choose a room, budget, and style. We will suggest a practical direction suited to Hong Kong homes where layout efficiency, storage, and material durability matter.
+                Choose a room, budget, and style for a quick direction.
               </p>
 
               <div className="space-y-8">
@@ -1239,7 +1235,7 @@ export function Inspiration() {
           <div className="mb-10 max-w-3xl">
             <h2 className="text-4xl text-gray-900 mb-4">Ready-Made Moodboards</h2>
             <p className="text-lg text-gray-600">
-              These moodboards are tuned for Hong Kong interior projects, where built-in storage, clean zoning, wet-area durability, and visual openness usually matter more than pure floor area.
+              Moodboards tuned for Hong Kong homes.
             </p>
           </div>
 
@@ -1255,7 +1251,7 @@ export function Inspiration() {
                   </span>
                 </div>
                 <h3 className="text-2xl text-gray-900">
-                  Browse room-specific boards before you request a quotation
+                  Browse boards before you request a quotation
                 </h3>
               </div>
 
@@ -1470,8 +1466,7 @@ export function Inspiration() {
               </div>
               <h2 className="text-3xl mb-4">Turn early interest into a sales conversation.</h2>
               <p className="text-slate-300 leading-relaxed mb-8">
-                Offer a moodboard or short consultation so visitors can move forward even if
-                they are not ready for a full estimate yet.
+                Offer a moodboard or short consultation for visitors not ready for a full estimate.
               </p>
               <div className="space-y-4">
                 {[
@@ -1490,7 +1485,7 @@ export function Inspiration() {
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
               <h3 className="text-3xl text-gray-900 mb-2">Request Moodboard / Consultation</h3>
               <p className="text-gray-600 mb-8">
-                Capture the lead now and follow up with a suggestion pack or a short discovery call.
+                Capture the lead and follow up later.
               </p>
 
               <form onSubmit={handleLeadSubmit} className="space-y-6">
@@ -1586,7 +1581,7 @@ export function Inspiration() {
                 </div>
 
                 <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-sm text-blue-900">
-                  This lead will be saved with the current room, budget, and style choices from the Idea Starter.
+                  This lead saves the current room, budget, and style choices.
                 </div>
 
                 <button
