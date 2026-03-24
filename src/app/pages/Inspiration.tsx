@@ -1,1804 +1,807 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
   ArrowLeft,
   ArrowRight,
-  Bath,
   CheckCircle,
-  Hammer,
-  House,
+  ClipboardList,
+  Eye,
   Lightbulb,
   Palette,
-  Paintbrush,
-  Sparkles,
+  Ruler,
+  Wallet,
 } from "lucide-react";
-import { toast } from "sonner";
+import type { PricingTier, StyleDirection } from "../lib/boqEstimate";
 import {
-  createLeadId,
-  getLeadDestinationSettings,
-  saveIdeaStarterLead,
-  submitLeadToDestinations,
-} from "../lib/leadPipeline";
+  IDEA_ESTIMATE_DRAFT_KEY,
+  type IdeaEstimateDraft,
+} from "../lib/ideaEstimateDraft";
 
-const roomOptions = [
-  { id: "living-room", label: "Living Room", icon: House },
-  { id: "kitchen", label: "Kitchen", icon: Hammer },
-  { id: "bedroom", label: "Bedroom", icon: Paintbrush },
-  { id: "bathroom", label: "Bathroom", icon: Bath },
+type FlowStep = 1 | 2 | 3 | 4 | 5;
+type IntentId = "inspiration" | "plan-renovation" | "just-browsing";
+type SpaceSizeId = "compact" | "family" | "spacious";
+
+type IntentOption = {
+  id: IntentId;
+  label: string;
+  description: string;
+  icon: typeof Lightbulb;
+};
+
+type StyleCard = {
+  id: StyleDirection;
+  label: string;
+  description: string;
+  image: string;
+  palette: string[];
+  highlights: string[];
+  explanation: string;
+  costFactor: number;
+};
+
+type SpaceSizeOption = {
+  id: SpaceSizeId;
+  label: string;
+  description: string;
+  areaHint: string;
+  defaultArea: string;
+};
+
+type BudgetOption = {
+  id: PricingTier;
+  label: string;
+  description: string;
+};
+
+const steps = [
+  { id: 1 as FlowStep, label: "Intent" },
+  { id: 2 as FlowStep, label: "Style" },
+  { id: 3 as FlowStep, label: "Personalize" },
+  { id: 4 as FlowStep, label: "Result" },
+  { id: 5 as FlowStep, label: "Estimate" },
 ];
 
-const budgetOptions = [
-  { id: "starter", label: "Starter Refresh", range: "HKD 80k - 180k" },
-  { id: "mid", label: "Family Upgrade", range: "HKD 180k - 380k" },
-  { id: "premium", label: "Signature Makeover", range: "HKD 380k+" },
+const intentOptions: IntentOption[] = [
+  {
+    id: "inspiration",
+    label: "Get inspiration",
+    description: "I want a clear design direction before I decide anything else.",
+    icon: Lightbulb,
+  },
+  {
+    id: "plan-renovation",
+    label: "Plan renovation",
+    description: "I am ready to narrow the style and move toward pricing.",
+    icon: ClipboardList,
+  },
+  {
+    id: "just-browsing",
+    label: "Just browsing",
+    description: "I want something simple that helps me understand what I like.",
+    icon: Eye,
+  },
 ];
 
-const styleOptions = [
+const styleCards: StyleCard[] = [
   {
     id: "modern-minimal",
     label: "Modern Minimal",
+    description: "Calm lines, hidden storage, and a clean Hong Kong flat feel.",
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80",
     palette: ["#F5F5F2", "#D9D9D6", "#3A3A3A", "#E8E1D9", "#1C1C1C"],
+    highlights: [
+      "Storage-led joinery to reduce clutter",
+      "Matte finishes that stay quiet visually",
+      "Slim details that suit compact layouts",
+    ],
+    explanation:
+      "A practical fit for owners who want the home to feel lighter, tidier, and easier to brief.",
+    costFactor: 1,
   },
   {
     id: "japandi",
     label: "Japandi",
+    description: "Soft timber warmth with a grounded, restful atmosphere.",
+    image:
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1400&q=80",
     palette: ["#F4EFEA", "#D6C3A3", "#7A8C66", "#8B6F4E", "#4B3A2F"],
+    highlights: [
+      "Natural oak and warm stone tones",
+      "Layered neutrals that soften small rooms",
+      "Balanced styling without overdecorating",
+    ],
+    explanation:
+      "Good for clients who want warmth and calm without pushing into a heavy luxury look.",
+    costFactor: 1.04,
   },
   {
     id: "modern-luxury",
     label: "Modern Luxury",
+    description: "Refined contrast, premium finishes, and stronger presence.",
+    image:
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1400&q=80",
     palette: ["#F8F7F5", "#CFCFCF", "#C6A96E", "#6B5E53", "#1A1A1A"],
+    highlights: [
+      "Feature stone or fluted finish moments",
+      "Hotel-style detailing in key areas",
+      "Sharper visual contrast and richer materials",
+    ],
+    explanation:
+      "Best for owners who want a more premium result and are comfortable with upgraded finishes.",
+    costFactor: 1.14,
   },
   {
     id: "scandinavian",
     label: "Scandinavian",
+    description: "Bright, airy, and easy to live with for family homes.",
+    image:
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1400&q=80",
     palette: ["#FFFFFF", "#E5E5E5", "#AFCBDA", "#EADBC8", "#2E2E2E"],
+    highlights: [
+      "Lighter tones to open up the room",
+      "Soft contrast for a friendly family feel",
+      "Simple styling that stays flexible over time",
+    ],
+    explanation:
+      "A safe and welcoming choice if you want the home to feel brighter and more open.",
+    costFactor: 1.02,
   },
   {
     id: "industrial",
     label: "Industrial",
+    description: "Darker tones, texture, and a sharper urban edge.",
+    image:
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1400&q=80&sat=-20",
     palette: ["#B0B0B0", "#6E6E6E", "#A0522D", "#5A4634", "#121212"],
+    highlights: [
+      "Richer texture with darker joinery tones",
+      "Graphic finishes that create stronger character",
+      "Good for statement corners and bachelor flats",
+    ],
+    explanation:
+      "Suited to clients who prefer a moodier, more graphic look than a soft neutral home.",
+    costFactor: 1.08,
   },
   {
     id: "korean-soft",
     label: "Korean Soft / Feminine",
+    description: "Muted warmth, rounded edges, and a gentler finish palette.",
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1400&q=80&sat=-10",
     palette: ["#FAF8F6", "#F2DCDC", "#D8A7A7", "#EAD8C0", "#6B4F4F"],
+    highlights: [
+      "Soft painted joinery and curved detailing",
+      "Warm blush and cream layering",
+      "A lighter, more delicate bedroom-friendly tone",
+    ],
+    explanation:
+      "Works well for owners who want a softer and more personal home mood without going ornate.",
+    costFactor: 1.03,
   },
-] as const;
+];
 
-type RoomId = (typeof roomOptions)[number]["id"];
-type BudgetId = (typeof budgetOptions)[number]["id"];
-type StyleId = (typeof styleOptions)[number]["id"];
+const spaceSizeOptions: SpaceSizeOption[] = [
+  {
+    id: "compact",
+    label: "Compact",
+    description: "Small flat with tighter planning needs.",
+    areaHint: "Up to about 450 sq ft",
+    defaultArea: "380",
+  },
+  {
+    id: "family",
+    label: "Family",
+    description: "Typical home size for a fuller renovation brief.",
+    areaHint: "Around 450 to 700 sq ft",
+    defaultArea: "580",
+  },
+  {
+    id: "spacious",
+    label: "Spacious",
+    description: "Larger home with more rooms or styling scope.",
+    areaHint: "Around 700 sq ft or above",
+    defaultArea: "820",
+  },
+];
 
-type QuizOption = {
-  id: string;
-  label: string;
-  description: string;
-  room?: RoomId;
-  styleScores?: Partial<Record<StyleId, number>>;
-  budget?: BudgetId;
-  palettePreview?: string[];
+const budgetOptions: BudgetOption[] = [
+  {
+    id: "basic",
+    label: "Basic",
+    description: "Smart essentials with more controlled finish choices.",
+  },
+  {
+    id: "standard",
+    label: "Standard",
+    description: "Balanced finish quality for a full mid-range result.",
+  },
+  {
+    id: "premium",
+    label: "Premium",
+    description: "Higher-end detailing, materials, and visual impact.",
+  },
+];
+
+const baseCostMatrix: Record<SpaceSizeId, Record<PricingTier, [number, number]>> = {
+  compact: {
+    basic: [180000, 280000],
+    standard: [280000, 420000],
+    premium: [420000, 620000],
+  },
+  family: {
+    basic: [280000, 420000],
+    standard: [420000, 620000],
+    premium: [620000, 880000],
+  },
+  spacious: {
+    basic: [420000, 580000],
+    standard: [580000, 860000],
+    premium: [860000, 1280000],
+  },
 };
 
-type QuizQuestion = {
-  id: string;
-  prompt: string;
-  helper: string;
-  options: QuizOption[];
+const intentSummaries: Record<IntentId, string> = {
+  inspiration:
+    "You want a direction first, so the recommendation focuses on something clear and easy to picture.",
+  "plan-renovation":
+    "You are moving closer to renovation, so the recommendation leans toward buildable choices that can turn into a practical estimate.",
+  "just-browsing":
+    "You are still feeling out your taste, so the recommendation stays approachable and easy to compare.",
 };
 
-type LeadFormState = {
-  name: string;
-  email: string;
-  contact: string;
-  requestType: string;
-  notes: string;
-};
+function formatCurrency(value: number) {
+  return `HKD ${value.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })}`;
+}
 
-type LeadFormErrors = Partial<Record<keyof LeadFormState, string>>;
+function roundToNearestThousand(value: number) {
+  return Math.round(value / 1000) * 1000;
+}
 
-const quizQuestions: QuizQuestion[] = [
-  {
-    id: "focus-room",
-    prompt: "Which area should feel better first?",
-    helper:
-      "This helps us suggest the most sensible first moodboard for a Hong Kong home.",
-    options: [
-      {
-        id: "living-room",
-        label: "Living room first",
-        description: "Best if you want the home to feel more polished for daily living and guests.",
-        room: "living-room",
-        styleScores: { "modern-minimal": 1, scandinavian: 1, "modern-luxury": 1 },
-      },
-      {
-        id: "kitchen",
-        label: "Kitchen first",
-        description: "Best if workflow, storage, and resale impact matter most.",
-        room: "kitchen",
-        styleScores: { japandi: 2, industrial: 1, "modern-minimal": 1 },
-      },
-      {
-        id: "bedroom",
-        label: "Bedroom first",
-        description: "Best if comfort, storage, and softness matter more than showpiece design.",
-        room: "bedroom",
-        styleScores: { "korean-soft": 2, japandi: 1, scandinavian: 1 },
-      },
-      {
-        id: "bathroom",
-        label: "Bathroom first",
-        description: "Best if you want a fast visual upgrade in a small footprint.",
-        room: "bathroom",
-        styleScores: { "modern-minimal": 1, "modern-luxury": 1, scandinavian: 1 },
-      },
-    ],
-  },
-  {
-    id: "daily-priority",
-    prompt: "What matters most in your renovation?",
-    helper:
-      "Choose the goal that sounds closest to your real day-to-day frustration.",
-    options: [
-      {
-        id: "calm-space",
-        label: "I want it to feel calmer",
-        description: "Cleaner visual lines, softer layering, and less noise.",
-        styleScores: { "modern-minimal": 3, japandi: 2, scandinavian: 2 },
-      },
-      {
-        id: "more-storage",
-        label: "I need smarter storage",
-        description: "Built-ins, hidden joinery, and more efficient planning.",
-        styleScores: { "modern-minimal": 4, industrial: 1, scandinavian: 1 },
-      },
-      {
-        id: "more-warmth",
-        label: "I want it warmer and more welcoming",
-        description: "Wood tones, softer stone, and a more inviting feel.",
-        styleScores: { japandi: 4, "korean-soft": 2, "modern-luxury": 1 },
-      },
-      {
-        id: "more-luxury",
-        label: "I want it to feel more premium",
-        description: "Hotel-like detailing, feature finishes, and stronger impact.",
-        styleScores: { "modern-luxury": 4, industrial: 1, japandi: 1 },
-      },
-    ],
-  },
-  {
-    id: "visual-mood",
-    prompt: "Which visual mood are you naturally drawn to?",
-    helper:
-      "Most clients know how they want the room to feel before they know the style name.",
-    options: [
-      {
-        id: "soft-airy",
-        label: "Soft and airy",
-        description: "Light, open, and easy to live with.",
-        styleScores: { scandinavian: 3, "modern-minimal": 2, "korean-soft": 1 },
-        palettePreview: ["#FFFFFF", "#E5E5E5", "#AFCBDA", "#EADBC8", "#2E2E2E"],
-      },
-      {
-        id: "warm-layered",
-        label: "Warm and layered",
-        description: "Natural materials, grounded tones, and richer warmth.",
-        styleScores: { japandi: 3, "modern-luxury": 1, "korean-soft": 1 },
-        palettePreview: ["#F4EFEA", "#D6C3A3", "#7A8C66", "#8B6F4E", "#4B3A2F"],
-      },
-      {
-        id: "clean-practical",
-        label: "Clean and practical",
-        description: "Simple, efficient, and strongly layout-driven.",
-        styleScores: { "modern-minimal": 3, industrial: 1, scandinavian: 1 },
-        palettePreview: ["#F5F5F2", "#D9D9D6", "#3A3A3A", "#E8E1D9", "#1C1C1C"],
-      },
-      {
-        id: "bold-contrast",
-        label: "Bold with contrast",
-        description: "Deeper tones, stronger edges, and more drama.",
-        styleScores: { industrial: 4, "modern-luxury": 2 },
-        palettePreview: ["#B0B0B0", "#6E6E6E", "#A0522D", "#5A4634", "#121212"],
-      },
-    ],
-  },
-  {
-    id: "finish-direction",
-    prompt: "Which finish family feels most like you?",
-    helper:
-      "This pushes the recommendation closer to the material language you actually like.",
-    options: [
-      {
-        id: "oak-stone",
-        label: "Oak and soft stone",
-        description: "Quiet, warm, and easy to maintain visually.",
-        styleScores: { japandi: 3, scandinavian: 1, "korean-soft": 1 },
-      },
-      {
-        id: "painted-joinery",
-        label: "Painted joinery and hidden storage",
-        description: "Sharper planning with less visual clutter.",
-        styleScores: { "modern-minimal": 4, scandinavian: 1 },
-      },
-      {
-        id: "fluted-brass",
-        label: "Fluted details and brass",
-        description: "Boutique-hotel cues with stronger styling intent.",
-        styleScores: { "modern-luxury": 4, japandi: 1 },
-        budget: "premium",
-      },
-      {
-        id: "charcoal-stone",
-        label: "Charcoal and richer stone",
-        description: "A darker, more graphic interior direction.",
-        styleScores: { industrial: 4, "modern-luxury": 1 },
-        budget: "premium",
-      },
-    ],
-  },
-];
-
-// Replace these URLs later with your own project photos, renders, or portfolio images.
-const MOODBOARD_IMAGE_LIBRARY = {
-  urbanCalm:
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-  galleryJapandi:
-    "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
-  modernHarvest:
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
-  shadowLine:
-    "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
-  smartRetreat:
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&sat=-15",
-  suiteLuxe:
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&contrast=20",
-  spaReset:
-    "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=1200&q=80",
-  marbleGlow:
-    "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=1200&q=80",
-} as const;
-
-const presetMoodboards = [
-  {
-    id: "harbour-quiet",
-    room: "living-room",
-    style: "modern-minimal",
-    title: "Harbour Quiet",
-    fit: "Living Room · Modern Minimal",
-    description:
-      "A restrained living room direction with softened greys, warm off-whites, and sharper detailing for Hong Kong flats that need to feel calm without losing edge.",
-    image: MOODBOARD_IMAGE_LIBRARY.urbanCalm,
-    materials: ["Low-profile TV wall", "Stone-look coffee table", "Textured off-white upholstery", "Slim black metal details"],
-    tags: ["Quiet palette", "Slim joinery", "City flat", "Minimal styling"],
-    swatches: [
-      { label: "Base", color: "#F5F5F2" },
-      { label: "Stone", color: "#D9D9D6" },
-      { label: "Joinery", color: "#3A3A3A" },
-      { label: "Textile", color: "#E8E1D9" },
-      { label: "Outline", color: "#1C1C1C" },
-    ],
-  },
-  {
-    id: "nordic-daylight",
-    room: "living-room",
-    style: "scandinavian",
-    title: "Nordic Daylight",
-    fit: "Living Room · Scandinavian",
-    description:
-      "A brighter board for compact apartments using pale timber, cloud whites, muted blue-grey accents, and soft layering that opens up the room visually.",
-    image: MOODBOARD_IMAGE_LIBRARY.galleryJapandi,
-    materials: ["Pale oak media wall", "Soft woven fabrics", "Light blue-grey accents", "Round-edged loose furniture"],
-    tags: ["Nordic sofa", "Airy palette", "Timber legs", "Soft daylight"],
-    swatches: [
-      { label: "Wall", color: "#FFFFFF" },
-      { label: "Floor", color: "#E5E5E5" },
-      { label: "Accent", color: "#AFCBDA" },
-      { label: "Timber", color: "#EADBC8" },
-      { label: "Outline", color: "#2E2E2E" },
-    ],
-  },
-  {
-    id: "timber-balance",
-    room: "kitchen",
-    style: "japandi",
-    title: "Timber Balance",
-    fit: "Kitchen · Japandi",
-    description:
-      "A calmer kitchen built around soft plaster tones, honeyed timber, olive accents, and grounded brown details for a warm but uncluttered family upgrade.",
-    image: MOODBOARD_IMAGE_LIBRARY.modernHarvest,
-    materials: ["Timber-faced cabinets", "Quiet open shelf niche", "Warm task lighting", "Muted feature hardware"],
-    tags: ["Natural wood", "Soft green", "Organic edges", "Calm workflow"],
-    swatches: [
-      { label: "Plaster", color: "#F4EFEA" },
-      { label: "Oak", color: "#D6C3A3" },
-      { label: "Accent", color: "#7A8C66" },
-      { label: "Wood", color: "#8B6F4E" },
-      { label: "Outline", color: "#4B3A2F" },
-    ],
-  },
-  {
-    id: "atelier-steel",
-    room: "kitchen",
-    style: "industrial",
-    title: "Atelier Steel",
-    fit: "Kitchen · Industrial",
-    description:
-      "A sharper kitchen concept with concrete greys, darker timber, and burnished rust notes for owners who want a more architectural statement.",
-    image: MOODBOARD_IMAGE_LIBRARY.shadowLine,
-    materials: ["Matte grey joinery", "Dark wood shelving", "Black-framed lighting", "Textured industrial hardware"],
-    tags: ["Concrete tones", "Loft feel", "Black metal", "Statement kitchen"],
-    swatches: [
-      { label: "Concrete", color: "#B0B0B0" },
-      { label: "Steel", color: "#6E6E6E" },
-      { label: "Rust", color: "#A0522D" },
-      { label: "Timber", color: "#5A4634" },
-      { label: "Outline", color: "#121212" },
-    ],
-  },
-  {
-    id: "soft-seoul",
-    room: "bedroom",
-    style: "korean-soft",
-    title: "Soft Seoul",
-    fit: "Bedroom · Korean Soft / Feminine",
-    description:
-      "A softer bedroom direction with blush undertones, rounded forms, and creamy layers for clients who want a calm room with a more feminine tone.",
-    image: MOODBOARD_IMAGE_LIBRARY.smartRetreat,
-    materials: ["Curved bedside details", "Layered drapery", "Creamy built-in wardrobe", "Soft pink-beige accents"],
-    tags: ["Rounded forms", "Powder tones", "Soft fabric", "Quiet bedroom"],
-    swatches: [
-      { label: "Base", color: "#FAF8F6" },
-      { label: "Blush", color: "#F2DCDC" },
-      { label: "Accent", color: "#D8A7A7" },
-      { label: "Cream", color: "#EAD8C0" },
-      { label: "Outline", color: "#6B4F4F" },
-    ],
-  },
-  {
-    id: "suite-brass",
-    room: "bedroom",
-    style: "modern-luxury",
-    title: "Suite Brass",
-    fit: "Bedroom · Modern Luxury",
-    description:
-      "A more tailored bedroom concept using pale stone, brass accents, deeper taupe joinery, and clean-lined luxury detailing.",
-    image: MOODBOARD_IMAGE_LIBRARY.suiteLuxe,
-    materials: ["Fluted bedside panel", "Brushed brass lines", "Tailored upholstery", "Stone-look side table"],
-    tags: ["Hotel tone", "Brass trim", "Premium joinery", "Tailored lighting"],
-    swatches: [
-      { label: "Base", color: "#F8F7F5" },
-      { label: "Stone", color: "#CFCFCF" },
-      { label: "Brass", color: "#C6A96E" },
-      { label: "Taupe", color: "#6B5E53" },
-      { label: "Outline", color: "#1A1A1A" },
-    ],
-  },
-  {
-    id: "minimal-spa",
-    room: "bathroom",
-    style: "modern-minimal",
-    title: "Minimal Spa",
-    fit: "Bathroom · Modern Minimal",
-    description:
-      "A cleaner bathroom board focused on soft greys, creamy stone, and sharp black edges that make small bathrooms feel more deliberate and refined.",
-    image: MOODBOARD_IMAGE_LIBRARY.spaReset,
-    materials: ["Large-format tile", "Slim floating vanity", "Frameless mirror", "Quiet black trim"],
-    tags: ["Hotel clean", "Stone feel", "Simple vanity", "Sharp detailing"],
-    swatches: [
-      { label: "Base", color: "#F5F5F2" },
-      { label: "Tile", color: "#D9D9D6" },
-      { label: "Vanity", color: "#3A3A3A" },
-      { label: "Stone", color: "#E8E1D9" },
-      { label: "Outline", color: "#1C1C1C" },
-    ],
-  },
-  {
-    id: "brass-veil",
-    room: "bathroom",
-    style: "modern-luxury",
-    title: "Brass Veil",
-    fit: "Bathroom · Modern Luxury",
-    description:
-      "An elevated bathroom concept with brushed brass, pale stone, and deep taupe contrasts aimed at clients who want a strong boutique-hotel finish.",
-    image: MOODBOARD_IMAGE_LIBRARY.marbleGlow,
-    materials: ["Stone slab wall", "Brushed brass fittings", "Custom vanity block", "Integrated mirror lighting"],
-    tags: ["Warm brass", "Luxury bath", "Stone slab", "Hotel vanity"],
-    swatches: [
-      { label: "Base", color: "#F8F7F5" },
-      { label: "Stone", color: "#CFCFCF" },
-      { label: "Brass", color: "#C6A96E" },
-      { label: "Joinery", color: "#6B5E53" },
-      { label: "Outline", color: "#1A1A1A" },
-    ],
-  },
-];
-
-const suggestionLibrary = [
-  {
-    room: "living-room",
-    budget: "starter",
-    style: "modern-minimal",
-    title: "Modern Minimal Living Room Reset",
-    summary:
-      "A restrained first upgrade for homeowners who want the living room to feel calmer, cleaner, and easier to maintain visually.",
-    outcomes: [
-      "Quiet wall palette with stronger contrast control",
-      "Slim TV wall or media storage to reduce clutter",
-      "Furniture and rug direction that keeps the room lighter",
-    ],
-    timeline: "2 to 3 weeks",
-  },
-  {
-    room: "living-room",
-    budget: "mid",
-    style: "scandinavian",
-    title: "Scandinavian Family Living Room",
-    summary:
-      "A brighter family room concept that improves openness without making the space feel cold or unfinished.",
-    outcomes: [
-      "Light timber and off-white palette for better perceived space",
-      "Softer furniture planning for daily living",
-      "Airier lighting and loose-furniture direction",
-    ],
-    timeline: "3 to 5 weeks",
-  },
-  {
-    room: "kitchen",
-    budget: "mid",
-    style: "japandi",
-    title: "Japandi Kitchen Upgrade",
-    summary:
-      "A balanced kitchen direction focused on flow, warm timber, and a calmer material mix that still feels premium.",
-    outcomes: [
-      "Cabinet redesign for clearer daily workflow",
-      "Natural wood and stone palette pairing",
-      "Task-lighting and niche planning for visual calm",
-    ],
-    timeline: "4 to 6 weeks",
-  },
-  {
-    room: "kitchen",
-    budget: "premium",
-    style: "industrial",
-    title: "Industrial Signature Kitchen",
-    summary:
-      "For owners who want a more architectural showpiece kitchen with stronger contrast and material character.",
-    outcomes: [
-      "Darker joinery and metal-led detailing",
-      "Feature shelving or statement counter concept",
-      "Stronger material contrast with premium hardware",
-    ],
-    timeline: "6 to 8 weeks",
-  },
-  {
-    room: "bedroom",
-    budget: "starter",
-    style: "korean-soft",
-    title: "Korean Soft Bedroom Refresh",
-    summary:
-      "A lighter-touch concept for clients who want a softer, more feminine room direction before committing to larger built-in works.",
-    outcomes: [
-      "Cream, blush, and fabric palette direction",
-      "Rounded bedside and wardrobe styling ideas",
-      "Lighting upgrades for a gentler atmosphere",
-    ],
-    timeline: "2 to 3 weeks",
-  },
-  {
-    room: "bedroom",
-    budget: "premium",
-    style: "modern-luxury",
-    title: "Modern Luxury Master Bedroom",
-    summary:
-      "A more aspirational concept for clients looking for premium finishes and a stronger hotel-style finish.",
-    outcomes: [
-      "Feature headboard wall and tailored bedside detailing",
-      "Integrated wardrobe and vanity concept",
-      "Brass-led palette and layered lighting plan",
-    ],
-    timeline: "4 to 6 weeks",
-  },
-  {
-    room: "bathroom",
-    budget: "starter",
-    style: "modern-minimal",
-    title: "Modern Minimal Bathroom Reset",
-    summary:
-      "A practical bathroom refresh that improves daily comfort with cleaner lines and a more considered material mix.",
-    outcomes: [
-      "Large-format tile and sanitaryware direction",
-      "Mirror and vanity choices that improve perceived space",
-      "Lighting upgrade to make the room feel more deliberate",
-    ],
-    timeline: "2 to 3 weeks",
-  },
-  {
-    room: "bathroom",
-    budget: "mid",
-    style: "modern-luxury",
-    title: "Modern Luxury Bathroom Upgrade",
-    summary:
-      "Built for tighter layouts where a stronger boutique-hotel feel matters more than raw square footage.",
-    outcomes: [
-      "Wall-hung vanity and brass-led fixture planning",
-      "More premium shower and basin arrangement",
-      "Stone and lighting selections with stronger visual impact",
-    ],
-    timeline: "3 to 4 weeks",
-  },
-];
-
-const fallbackSuggestions = [
-  {
-    title: "Whole-Home Direction Session",
-    summary:
-      "Best for visitors who are still comparing ideas and need clarity before talking budget.",
-    outcomes: [
-      "Shortlist the best room to renovate first",
-      "Pick a visual direction that fits the property",
-      "Move into an estimate with fewer revisions",
-    ],
-    timeline: "1 planning session",
-  },
-  {
-    title: "High-Impact First Project",
-    summary:
-      "A starting concept focused on one room that changes the feel of the home quickly and helps unlock future work.",
-    outcomes: [
-      "Choose one conversion-focused renovation target",
-      "Build a sensible budget range before overcommitting",
-      "Create a cleaner next step into design and quotation",
-    ],
-    timeline: "1 to 2 planning sessions",
-  },
-];
-
-const flowSteps = [
-  { id: 1, label: "Style Quiz", summary: "Answer a few quick questions" },
-  { id: 2, label: "Direction", summary: "Choose room, budget, and style" },
-  { id: 3, label: "Moodboards", summary: "Browse and compare boards" },
-  { id: 4, label: "Contact", summary: "Request a moodboard or call" },
-] as const;
-
-type FlowStep = (typeof flowSteps)[number]["id"];
+function getProgressWidth(step: FlowStep) {
+  return (step / steps.length) * 100;
+}
 
 export function Inspiration() {
-  const [selectedRoom, setSelectedRoom] = useState(roomOptions[0].id);
-  const [selectedBudget, setSelectedBudget] = useState(budgetOptions[1].id);
-  const [selectedStyle, setSelectedStyle] = useState(styleOptions[0].id);
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const [activeStep, setActiveStep] = useState<FlowStep>(1);
-  const [maxUnlockedStep, setMaxUnlockedStep] = useState<FlowStep>(1);
-  const [selectedMoodboardId, setSelectedMoodboardId] = useState<string | null>(
+  const [currentStep, setCurrentStep] = useState<FlowStep>(1);
+  const [selectedIntent, setSelectedIntent] = useState<IntentId | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<StyleDirection | null>(null);
+  const [selectedSpaceSize, setSelectedSpaceSize] = useState<SpaceSizeId | null>(
     null,
   );
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
-  const [leadFormErrors, setLeadFormErrors] = useState<LeadFormErrors>({});
-  const [leadForm, setLeadForm] = useState<LeadFormState>({
-    name: "",
-    email: "",
-    contact: "",
-    requestType: "moodboard",
-    notes: "",
-  });
+  const [selectedBudget, setSelectedBudget] = useState<PricingTier | null>(null);
+  const [showErrors, setShowErrors] = useState(false);
 
-  const matchingSuggestions = useMemo(() => {
-    const matches = suggestionLibrary.filter(
-      (suggestion) =>
-        suggestion.room === selectedRoom &&
-        suggestion.budget === selectedBudget &&
-        suggestion.style === selectedStyle,
-    );
+  const chosenStyle = useMemo(
+    () => styleCards.find((style) => style.id === selectedStyle) ?? null,
+    [selectedStyle],
+  );
+  const chosenIntent = useMemo(
+    () => intentOptions.find((intent) => intent.id === selectedIntent) ?? null,
+    [selectedIntent],
+  );
+  const chosenSpaceSize = useMemo(
+    () => spaceSizeOptions.find((size) => size.id === selectedSpaceSize) ?? null,
+    [selectedSpaceSize],
+  );
+  const chosenBudget = useMemo(
+    () => budgetOptions.find((budget) => budget.id === selectedBudget) ?? null,
+    [selectedBudget],
+  );
 
-    return matches.length > 0 ? matches : fallbackSuggestions;
-  }, [selectedBudget, selectedRoom, selectedStyle]);
+  const recommendation = useMemo(() => {
+    if (!chosenStyle || !chosenIntent || !chosenSpaceSize || !chosenBudget) {
+      return null;
+    }
 
-  const selectedRoomLabel =
-    roomOptions.find((option) => option.id === selectedRoom)?.label ?? "";
-  const selectedBudgetLabel =
-    budgetOptions.find((option) => option.id === selectedBudget)?.label ?? "";
-  const selectedStyleLabel =
-    styleOptions.find((option) => option.id === selectedStyle)?.label ?? "";
-  const answeredQuizCount = quizQuestions.filter(
-    (question) => quizAnswers[question.id],
-  ).length;
-  const moodboardGroups = roomOptions
-    .map((room) => ({
-      roomId: room.id,
-      roomLabel: room.label,
-      boards: presetMoodboards.filter((moodboard) => moodboard.room === room.id),
-    }))
-    .filter((group) => group.boards.length > 0);
-  const carouselBoards = useMemo(() => {
-    const roomBoards = presetMoodboards.filter(
-      (moodboard) => moodboard.room === selectedRoom,
-    );
-
-    const matchingStyleBoards = roomBoards.filter(
-      (moodboard) => moodboard.style === selectedStyle,
-    );
-    const otherBoards = roomBoards.filter(
-      (moodboard) => moodboard.style !== selectedStyle,
-    );
-
-    return [...matchingStyleBoards, ...otherBoards];
-  }, [selectedRoom, selectedStyle]);
-  const currentCarouselBoard = carouselBoards[carouselIndex] ?? presetMoodboards[0];
-  const selectedMoodboard =
-    presetMoodboards.find((moodboard) => moodboard.id === selectedMoodboardId) ??
-    null;
-  const quizResult = useMemo(() => {
-    const scoreMap = Object.fromEntries(
-      styleOptions.map((option) => [option.id, 0]),
-    ) as Record<StyleId, number>;
-
-    let recommendedRoom: RoomId = selectedRoom as RoomId;
-    let suggestedBudget: BudgetId | null = null;
-
-    quizQuestions.forEach((question) => {
-      const answerId = quizAnswers[question.id];
-      const answer = question.options.find((option) => option.id === answerId);
-
-      if (!answer) {
-        return;
-      }
-
-      if (answer.room) {
-        recommendedRoom = answer.room;
-      }
-
-      if (answer.budget) {
-        suggestedBudget = answer.budget;
-      }
-
-      Object.entries(answer.styleScores ?? {}).forEach(([styleId, value]) => {
-        scoreMap[styleId as StyleId] += value ?? 0;
-      });
-    });
-
-    const recommendedStyle = styleOptions.reduce<StyleId>((best, option) => {
-      if (scoreMap[option.id] > scoreMap[best]) {
-        return option.id;
-      }
-      return best;
-    }, selectedStyle as StyleId);
-
-    const recommendedBoard =
-      presetMoodboards.find(
-        (board) =>
-          board.room === recommendedRoom && board.style === recommendedStyle,
-      ) ??
-      presetMoodboards.find((board) => board.room === recommendedRoom) ??
-      presetMoodboards[0];
+    const [baseMin, baseMax] =
+      baseCostMatrix[chosenSpaceSize.id][chosenBudget.id];
+    const estimatedMin = roundToNearestThousand(baseMin * chosenStyle.costFactor);
+    const estimatedMax = roundToNearestThousand(baseMax * chosenStyle.costFactor);
 
     return {
-      room: recommendedRoom,
-      style: recommendedStyle,
-      budget: suggestedBudget,
-      board: recommendedBoard,
-      reasons: quizQuestions
-        .map((question) =>
-          question.options.find((option) => option.id === quizAnswers[question.id]),
-        )
-        .filter((value): value is QuizOption => Boolean(value)),
+      style: chosenStyle,
+      intent: chosenIntent,
+      size: chosenSpaceSize,
+      budget: chosenBudget,
+      estimatedMin,
+      estimatedMax,
+      explanation: `${intentSummaries[chosenIntent.id]} ${chosenStyle.explanation}`,
     };
-  }, [quizAnswers, selectedRoom, selectedStyle]);
-  const isQuizReady = answeredQuizCount === quizQuestions.length;
-  const progressPercentage = (activeStep / flowSteps.length) * 100;
+  }, [chosenBudget, chosenIntent, chosenSpaceSize, chosenStyle]);
 
-  useEffect(() => {
-    setCarouselIndex(0);
-  }, [selectedRoom, selectedStyle]);
+  const canContinue =
+    (currentStep === 1 && Boolean(selectedIntent)) ||
+    (currentStep === 2 && Boolean(selectedStyle)) ||
+    (currentStep === 3 && Boolean(selectedSpaceSize && selectedBudget)) ||
+    currentStep === 4;
 
-  useEffect(() => {
-    if (carouselBoards.length <= 1) {
+  const goNext = () => {
+    if (!canContinue) {
+      setShowErrors(true);
       return;
     }
 
-    const intervalId = window.setInterval(() => {
-      setCarouselIndex((current) => (current + 1) % carouselBoards.length);
-    }, 5200);
-
-    return () => window.clearInterval(intervalId);
-  }, [carouselBoards.length, selectedRoom, selectedStyle]);
-
-  const getStepLockMessage = (step: FlowStep) => {
-    if (step === 2) {
-      return "Finish the quiz and apply your direction first.";
-    }
-
-    if (step === 3) {
-      return "Apply your quiz result first.";
-    }
-
-    if (step === 4) {
-      return "Pick a moodboard first.";
-    }
-
-    return "Complete the previous step first.";
+    setShowErrors(false);
+    setCurrentStep((step) => (step < 5 ? ((step + 1) as FlowStep) : step));
   };
 
-  const goToStep = (step: FlowStep) => {
-    if (step <= maxUnlockedStep) {
-      setActiveStep(step);
+  const goBack = () => {
+    setShowErrors(false);
+    setCurrentStep((step) => (step > 1 ? ((step - 1) as FlowStep) : step));
+  };
+
+  const handleEstimateClick = () => {
+    if (!recommendation) {
       return;
     }
 
-    toast.error(getStepLockMessage(step));
-  };
-
-  const unlockStep = (step: FlowStep) => {
-    setMaxUnlockedStep((current) => (step > current ? step : current));
-  };
-
-  const openLeadCapture = () => {
-    if (!selectedMoodboardId) {
-      toast.error("Pick a moodboard first to unlock the contact step.");
-      return;
-    }
-
-    unlockStep(4);
-    setActiveStep(4);
-  };
-
-  const getLeadFieldClassName = (hasError: boolean) =>
-    `w-full rounded-xl px-4 py-3 outline-none transition-all ${
-      hasError
-        ? "border border-red-400 bg-red-50 focus:border-red-500"
-        : "border border-gray-300 bg-white focus:border-blue-600"
-    }`;
-
-  const updateLeadFormField = <K extends keyof LeadFormState>(
-    key: K,
-    value: LeadFormState[K],
-  ) => {
-    setLeadForm((current) => ({ ...current, [key]: value }));
-    setLeadFormErrors((current) => {
-      const next = { ...current };
-      delete next[key];
-      return next;
-    });
-  };
-
-  const validateLeadForm = (form: LeadFormState) => {
-    const errors: LeadFormErrors = {};
-
-    if (!form.name.trim()) {
-      errors.name = "Name is required.";
-    }
-
-    if (!form.email.trim()) {
-      errors.email = "Email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      errors.email = "Enter a valid email address.";
-    }
-
-    if (!form.contact.trim()) {
-      errors.contact = "WhatsApp / phone is required.";
-    }
-
-    return errors;
-  };
-
-  const handleLeadSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const errors = validateLeadForm(leadForm);
-
-    if (Object.keys(errors).length > 0) {
-      setLeadFormErrors(errors);
-      toast.error("Please fill in the required fields.");
-      return;
-    }
-
-    const leadEntry = {
-      id: createLeadId(),
-      ...leadForm,
-      room: selectedRoomLabel,
-      budget: selectedBudgetLabel,
-      style: selectedStyleLabel,
-      createdAt: new Date().toISOString(),
-      stage: "new" as const,
-      source: "idea-starter" as const,
+    const estimateDraft: IdeaEstimateDraft = {
+      propertySize: recommendation.size.defaultArea,
+      pricingTier: recommendation.budget.id,
+      style: recommendation.style.id,
+      projectBrief:
+        `Ideas flow recommendation: ${recommendation.style.label}. ` +
+        `Intent: ${recommendation.intent.label}. ` +
+        `Space size: ${recommendation.size.label}. ` +
+        `Budget: ${recommendation.budget.label}.`,
     };
 
-    saveIdeaStarterLead(leadEntry);
-
-    const submissionResult = await submitLeadToDestinations(
-      leadEntry,
-      getLeadDestinationSettings(),
-    );
-
-    if (submissionResult.errors.length > 0) {
-      toast.warning(
-        `Lead saved locally. ${submissionResult.errors[0]}`,
-      );
-    } else if (submissionResult.actions.length > 0) {
-      toast.success(
-        `Lead captured and sent to ${submissionResult.actions.join(", ")}.`,
-      );
-    } else {
-      toast.success("Lead captured. Follow up with this visitor soon.");
-    }
-
-    setLeadForm({
-      name: "",
-      email: "",
-      contact: "",
-      requestType: "moodboard",
-      notes: "",
-    });
-    setLeadFormErrors({});
-  };
-
-  const handleUseMoodboard = (moodboard: (typeof presetMoodboards)[number]) => {
-    setSelectedRoom(moodboard.room);
-    setSelectedStyle(moodboard.style);
-    setSelectedMoodboardId(moodboard.id);
-
-    setLeadForm((current) => ({
-      ...current,
-      requestType: current.requestType === "consultation" ? "both" : "moodboard",
-      notes: current.notes
-        ? `${current.notes}\nPreferred moodboard: ${moodboard.title} (${moodboard.fit})`
-        : `Preferred moodboard: ${moodboard.title} (${moodboard.fit})`,
-    }));
-
-    unlockStep(4);
-    setActiveStep(4);
-
-    toast.success(`${moodboard.title} added to the lead request.`);
-  };
-
-  const handleApplyQuizResult = () => {
-    setSelectedRoom(quizResult.room);
-    setSelectedStyle(quizResult.style);
-
-    if (quizResult.budget) {
-      setSelectedBudget(quizResult.budget);
-    }
-
-    setLeadForm((current) => ({
-      ...current,
-      requestType: current.requestType === "consultation" ? "both" : "moodboard",
-      notes: current.notes
-        ? `${current.notes}\nQuiz result: ${quizResult.board.title} · ${quizResult.board.fit}`
-        : `Quiz result: ${quizResult.board.title} · ${quizResult.board.fit}`,
-    }));
-
-    unlockStep(2);
-    setActiveStep(2);
-
-    toast.success("Quiz result applied. Review the direction before moodboards.");
-  };
-
-  const handleResetQuiz = () => {
-    setQuizAnswers({});
-    setMaxUnlockedStep(1);
-    setActiveStep(1);
-    setSelectedMoodboardId(null);
-  };
-
-  const handleContinueToMoodboards = () => {
-    unlockStep(3);
-    setActiveStep(3);
-  };
-
-  const handleCarouselMove = (direction: "prev" | "next") => {
-    if (carouselBoards.length === 0) {
-      return;
-    }
-
-    setCarouselIndex((current) =>
-      direction === "next"
-        ? (current + 1) % carouselBoards.length
-        : (current - 1 + carouselBoards.length) % carouselBoards.length,
+    sessionStorage.setItem(
+      IDEA_ESTIMATE_DRAFT_KEY,
+      JSON.stringify(estimateDraft),
     );
   };
 
   return (
-    <div className="bg-gray-50">
-      <section className="bg-gradient-to-br from-[#F9F8F6] via-[#EFE9E3] to-[#D9CFC7] text-[#4F4338] py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-[#D9CFC7] text-sm text-[#7A6751] mb-6">
-                <Lightbulb className="w-4 h-4" />
-                Hong Kong Idea Starter
-              </div>
-              <h1 className="text-4xl md:text-6xl leading-tight mb-6">
-                Not sure how to renovate your Hong Kong flat yet? Start with a direction, not a blind quotation.
-              </h1>
-              <p className="text-lg md:text-xl text-[#6E6258] max-w-2xl">
-                Built for Hong Kong owners still comparing ideas before they commit.
-              </p>
+    <div className="bg-[#F9F8F6] text-[#1C1C1C]">
+      <section className="border-b border-[#E8E1D9] bg-gradient-to-br from-[#F9F8F6] via-[#F5F3EF] to-[#EFE9E3]">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#D9D9D6] bg-white/80 px-4 py-2 text-sm text-[#6B5E53]">
+              <Lightbulb className="h-4 w-4" />
+              Guided Ideas Flow
             </div>
-
-            <div className="bg-white/75 backdrop-blur-sm border border-[#D9CFC7] rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl mb-2">What you get</h2>
-              <p className="text-[#6E6258] mb-6">
-                A practical first step into quotation or consultation.
-              </p>
-              <div className="space-y-4">
-                {[
-                  "Suggested room priorities for compact Hong Kong layouts",
-                  "A realistic Hong Kong renovation budget band",
-                  "A concept direction that shortens your briefing process",
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-[#8F775C] mt-0.5 flex-shrink-0" />
-                    <span className="text-[#4F4338]">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <h1 className="mt-6 text-4xl leading-tight md:text-5xl">
+              Find one renovation direction first. Then move into pricing.
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg text-[#6B5E53]">
+              A shorter, guided way to help Hong Kong homeowners decide what
+              style fits before asking for an estimate.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-[#E6DDD5] bg-white/75 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <section className="border-b border-[#E8E1D9] bg-white/80">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8F775C]">
-                Step {activeStep} of {flowSteps.length}
+              <div className="text-sm uppercase tracking-[0.18em] text-[#8B6F4E]">
+                Step {currentStep} / {steps.length}
               </div>
-              <div className="mt-1 text-2xl text-gray-900">
-                {flowSteps.find((step) => step.id === activeStep)?.label}
-              </div>
-              <div className="mt-1 text-sm text-gray-500">
-                {flowSteps.find((step) => step.id === activeStep)?.summary}
+              <div className="mt-2 text-2xl">
+                {steps.find((step) => step.id === currentStep)?.label}
               </div>
             </div>
-            <div className="rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] px-4 py-3 text-sm text-[#6E6258]">
-              {selectedMoodboard
-                ? `Selected board: ${selectedMoodboard.title}`
-                : "Complete each step to unlock the next one."}
+            <div className="text-sm text-[#6B5E53]">
+              {currentStep < 4
+                ? "Make one choice at a time."
+                : "Review the recommendation and move to estimate."}
             </div>
           </div>
 
-          <div className="mb-6 overflow-hidden rounded-full bg-[#EFE9E3]">
+          <div className="mt-5 overflow-hidden rounded-full bg-[#E8E1D9]">
             <div
-              className="h-2 rounded-full bg-[#8F775C] transition-all duration-500"
-              style={{ width: `${progressPercentage}%` }}
+              className="h-2 rounded-full bg-[#8B6F4E] transition-all duration-500"
+              style={{ width: `${getProgressWidth(currentStep)}%` }}
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-            {flowSteps.map((step) => {
-              const isActive = activeStep === step.id;
-              const isPast = activeStep > step.id;
-              const isUnlocked = step.id <= maxUnlockedStep;
+          <div className="mt-5 grid grid-cols-5 gap-2">
+            {steps.map((step) => {
+              const isActive = step.id === currentStep;
+              const isDone = step.id < currentStep;
 
               return (
-                <button
+                <div
                   key={step.id}
-                  type="button"
-                  onClick={() => goToStep(step.id)}
-                  aria-disabled={!isUnlocked}
-                  className={`rounded-2xl border px-4 py-4 text-left transition-all ${
+                  className={`rounded-2xl border px-3 py-3 text-center text-sm ${
                     isActive
-                      ? "border-[#8F775C] bg-[#F7F1EB] shadow-sm"
-                      : isPast
-                        ? "border-[#D9CFC7] bg-[#F9F8F6]"
-                        : isUnlocked
-                          ? "border-[#E6DDD5] bg-white hover:border-[#D9CFC7]"
-                          : "border-[#EEE7E0] bg-[#FCFBFA] opacity-70"
+                      ? "border-[#8B6F4E] bg-[#F4EFEA] text-[#4B3A2F]"
+                      : isDone
+                        ? "border-[#D9D9D6] bg-white text-[#6B5E53]"
+                        : "border-[#ECE7E1] bg-[#FCFBFA] text-[#A49586]"
                   }`}
                 >
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-[#8F775C]">
-                      Step {step.id}
-                    </div>
-                    <span
-                      className={`rounded-full px-2 py-1 text-[11px] uppercase tracking-[0.12em] ${
-                        isPast
-                          ? "bg-[#E8E1D9] text-[#7A6751]"
-                          : isActive
-                            ? "bg-[#8F775C] text-white"
-                            : isUnlocked
-                              ? "bg-[#F3EEE8] text-[#7A6751]"
-                              : "bg-[#F1EEEA] text-[#B0A396]"
-                      }`}
-                    >
-                      {isPast ? "Done" : isActive ? "Current" : isUnlocked ? "Open" : "Locked"}
-                    </span>
+                  <div className="mb-1 text-xs uppercase tracking-[0.14em]">
+                    {step.id}
                   </div>
-                  <div className="text-lg text-gray-900">{step.label}</div>
-                  <div className="mt-1 text-sm text-gray-500">{step.summary}</div>
-                </button>
+                  <div className="hidden sm:block">{step.label}</div>
+                  <div className="sm:hidden">Step</div>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {activeStep === 1 && (
-          <div className="mb-10 grid grid-cols-1 xl:grid-cols-[1fr_0.9fr] gap-8">
-            <div className="rounded-[2rem] border border-[#D9CFC7] bg-white p-8 shadow-sm">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#E6DDD5] bg-[#F9F8F6] px-4 py-2 text-sm text-[#7A6751] mb-6">
-                <Sparkles className="h-4 w-4" />
-                Guided Style Quiz
+      <section className="py-14">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div
+            key={currentStep}
+            className="rounded-[2rem] border border-[#E8E1D9] bg-white p-6 shadow-[0_18px_60px_rgba(31,24,19,0.06)] animate-reveal-up md:p-10"
+          >
+            {currentStep === 1 && (
+              <div>
+                <div className="max-w-2xl">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#8B6F4E]">
+                    <Lightbulb className="h-4 w-4" />
+                    Step 1
+                  </div>
+                  <h2 className="mt-5 text-3xl">What do you need today?</h2>
+                  <p className="mt-3 text-[#6B5E53]">
+                    Pick the closest intent so we can guide the next steps with
+                    less noise.
+                  </p>
+                </div>
+
+                <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {intentOptions.map((option) => {
+                    const Icon = option.icon;
+                    const isSelected = selectedIntent === option.id;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedIntent(option.id);
+                          setShowErrors(false);
+                        }}
+                        className={`rounded-[1.75rem] border p-6 text-left transition-all ${
+                          isSelected
+                            ? "border-[#8B6F4E] bg-[#F4EFEA] shadow-sm"
+                            : "border-[#E8E1D9] bg-white hover:border-[#C6A96E] hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <div className="mb-5 inline-flex rounded-2xl bg-white p-3 text-[#8B6F4E]">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="text-xl">{option.label}</div>
+                        <div className="mt-2 text-sm leading-6 text-[#6B5E53]">
+                          {option.description}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {showErrors && !selectedIntent && (
+                  <p className="mt-5 text-sm text-red-600">
+                    Choose one option to continue.
+                  </p>
+                )}
               </div>
-              <h2 className="text-3xl text-gray-900 mb-3">
-                Not sure what you want yet? Answer a few simple questions.
-              </h2>
-              <p className="text-gray-600 mb-8 max-w-3xl">
-                Pick what feels right and we will suggest a room, style, and palette.
-              </p>
+            )}
 
-              <div className="space-y-8">
-                {quizQuestions.map((question, index) => (
-                  <div key={question.id}>
-                    <div className="mb-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-[#8F775C] mb-2">
-                        Question {index + 1}
-                      </div>
-                      <h3 className="text-xl text-gray-900 mb-1">{question.prompt}</h3>
-                      <p className="text-sm text-gray-500">{question.helper}</p>
+            {currentStep === 2 && (
+              <div>
+                <div className="max-w-2xl">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#8B6F4E]">
+                    <Palette className="h-4 w-4" />
+                    Step 2
+                  </div>
+                  <h2 className="mt-5 text-3xl">Choose the style you lean toward.</h2>
+                  <p className="mt-3 text-[#6B5E53]">
+                    Keep it simple. Pick the one card that feels closest to your
+                    ideal home.
+                  </p>
+                </div>
+
+                <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {styleCards.map((style) => {
+                    const isSelected = selectedStyle === style.id;
+
+                    return (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedStyle(style.id);
+                          setShowErrors(false);
+                        }}
+                        className={`overflow-hidden rounded-[1.75rem] border text-left transition-all ${
+                          isSelected
+                            ? "border-[#8B6F4E] bg-[#F4EFEA] shadow-sm"
+                            : "border-[#E8E1D9] bg-white hover:border-[#C6A96E] hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <img
+                          src={style.image}
+                          alt={style.label}
+                          className="h-48 w-full object-cover"
+                        />
+                        <div className="p-5">
+                          <div className="text-xl">{style.label}</div>
+                          <div className="mt-2 text-sm text-[#6B5E53]">
+                            {style.description}
+                          </div>
+                          <div className="mt-4 flex gap-2">
+                            {style.palette.slice(0, 4).map((color) => (
+                              <div
+                                key={`${style.id}-${color}`}
+                                className="h-8 flex-1 rounded-xl border border-black/5"
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {showErrors && !selectedStyle && (
+                  <p className="mt-5 text-sm text-red-600">
+                    Pick one style card to continue.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <div>
+                <div className="max-w-2xl">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#8B6F4E]">
+                    <Ruler className="h-4 w-4" />
+                    Step 3
+                  </div>
+                  <h2 className="mt-5 text-3xl">Add two quick details.</h2>
+                  <p className="mt-3 text-[#6B5E53]">
+                    These two inputs are enough to shape a more realistic
+                    recommendation.
+                  </p>
+                </div>
+
+                <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-2">
+                  <div>
+                    <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.18em] text-[#8B6F4E]">
+                      <Ruler className="h-4 w-4" />
+                      Space size
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {question.options.map((option) => {
-                        const isSelected = quizAnswers[question.id] === option.id;
+                    <div className="space-y-4">
+                      {spaceSizeOptions.map((option) => {
+                        const isSelected = selectedSpaceSize === option.id;
 
                         return (
                           <button
                             key={option.id}
                             type="button"
-                            onClick={() =>
-                              setQuizAnswers((current) => ({
-                                ...current,
-                                [question.id]: option.id,
-                              }))
-                            }
-                            className={`rounded-[1.6rem] border p-5 text-left transition-all ${
+                            onClick={() => {
+                              setSelectedSpaceSize(option.id);
+                              setShowErrors(false);
+                            }}
+                            className={`w-full rounded-[1.5rem] border p-5 text-left transition-all ${
                               isSelected
-                                ? "border-[#C9B59C] bg-[#F9F4EF] shadow-sm"
-                                : "border-[#E6DDD5] bg-white hover:border-[#D9CFC7] hover:-translate-y-0.5"
+                                ? "border-[#8B6F4E] bg-[#F4EFEA] shadow-sm"
+                                : "border-[#E8E1D9] bg-white hover:border-[#C6A96E]"
                             }`}
                           >
-                            <div className="flex items-start justify-between gap-4 mb-3">
-                              <div className="font-medium text-gray-900">{option.label}</div>
-                              {isSelected && (
-                                <span className="rounded-full bg-[#8F775C] px-2 py-1 text-xs text-white">
-                                  Picked
-                                </span>
-                              )}
+                            <div className="text-lg">{option.label}</div>
+                            <div className="mt-1 text-sm text-[#6B5E53]">
+                              {option.description}
                             </div>
-                            <div className="text-sm text-gray-600">{option.description}</div>
-                            {option.palettePreview && (
-                              <div className="mt-4 flex gap-2">
-                                {option.palettePreview.map((color) => (
-                                  <div
-                                    key={`${question.id}-${option.id}-${color}`}
-                                    className="h-9 flex-1 rounded-2xl border border-black/5"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                ))}
-                              </div>
-                            )}
+                            <div className="mt-3 text-sm text-[#8B6F4E]">
+                              {option.areaHint}
+                            </div>
                           </button>
                         );
                       })}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="rounded-[2rem] border border-[#D9CFC7] bg-[#F9F8F6] p-8 shadow-sm">
-              <div className="flex items-center justify-between gap-4 mb-6">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm text-[#7A6751] border border-[#E6DDD5] mb-4">
-                    <Palette className="h-4 w-4" />
-                    Quiz Recommendation
-                  </div>
-                  <h2 className="text-3xl text-gray-900 mb-2">Your likely direction</h2>
-                  <p className="text-gray-600">
-                    A board based on your answers.
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-white px-4 py-3 text-center border border-[#E6DDD5] min-w-[110px]">
-                  <div className="text-2xl text-[#8F775C]">{answeredQuizCount}/{quizQuestions.length}</div>
-                  <div className="text-xs uppercase tracking-[0.16em] text-gray-500">
-                    Answered
-                  </div>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-[1.8rem] border border-[#E6DDD5] bg-white">
-                <img
-                  src={quizResult.board.image}
-                  alt={quizResult.board.title}
-                  className="h-64 w-full object-cover"
-                />
-                <div className="p-6">
-                  <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
-                    Suggested room · {
-                      roomOptions.find((option) => option.id === quizResult.room)?.label
-                    }
-                  </div>
-                  <h3 className="text-3xl text-gray-900 mb-2">{quizResult.board.title}</h3>
-                  <p className="text-gray-600 mb-5">{quizResult.board.description}</p>
-
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    <div className="rounded-2xl bg-[#F9F8F6] border border-[#E6DDD5] p-4">
-                      <div className="text-sm text-gray-500 mb-1">Likely style</div>
-                      <div className="text-lg text-gray-900">
-                        {styleOptions.find((option) => option.id === quizResult.style)?.label}
-                      </div>
+                  <div>
+                    <div className="mb-4 flex items-center gap-2 text-sm uppercase tracking-[0.18em] text-[#8B6F4E]">
+                      <Wallet className="h-4 w-4" />
+                      Budget level
                     </div>
-                    <div className="rounded-2xl bg-[#F9F8F6] border border-[#E6DDD5] p-4">
-                      <div className="text-sm text-gray-500 mb-1">Suggested budget band</div>
-                      <div className="text-lg text-gray-900">
-                        {budgetOptions.find((option) => option.id === quizResult.budget)?.label ?? "Flexible"}
-                      </div>
-                    </div>
-                  </div>
+                    <div className="space-y-4">
+                      {budgetOptions.map((option) => {
+                        const isSelected = selectedBudget === option.id;
 
-                  <div className="mb-6">
-                    <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-3">
-                      Recommended colour direction
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {quizResult.board.swatches.map((swatch) => (
-                        <div
-                          key={`quiz-result-${swatch.label}`}
-                          className="flex items-center gap-4 rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] p-3"
-                        >
-                          <div
-                            className="h-12 w-12 rounded-2xl border border-black/5"
-                            style={{ backgroundColor: swatch.color }}
-                          />
-                          <div>
-                            <div className="text-sm text-gray-500">{swatch.label}</div>
-                            <div className="text-base text-gray-900">{swatch.color}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-3">
-                      Why this fits
-                    </div>
-                    <div className="space-y-3">
-                      {quizResult.reasons.map((reason) => (
-                        <div key={reason.id} className="flex items-start gap-3">
-                          <CheckCircle className="h-5 w-5 text-[#8F775C] mt-0.5 flex-shrink-0" />
-                          <div>
-                            <div className="text-gray-900">{reason.label}</div>
-                            <div className="text-sm text-gray-500">{reason.description}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={handleApplyQuizResult}
-                      disabled={!isQuizReady}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white transition-colors hover:bg-[#7A6751] disabled:cursor-not-allowed disabled:bg-[#C9B59C]"
-                    >
-                      Apply This Direction
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openLeadCapture}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
-                    >
-                      Request This Style
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleResetQuiz}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[#E6DDD5] bg-transparent px-5 py-3 text-gray-600 hover:bg-white transition-colors"
-                    >
-                      Reset Answers
-                    </button>
-                  </div>
-
-                  {!isQuizReady && (
-                    <p className="mt-4 text-sm text-gray-500">
-                      Finish all {quizQuestions.length} questions to apply this result.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          )}
-
-          {activeStep === 1 && (
-            <div className="flex flex-wrap justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveStep(2)}
-                className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
-              >
-                Skip to direction
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {activeStep === 2 && (
-          <div className="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-8">
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
-              <h2 className="text-3xl text-gray-900 mb-2">Build Your Idea Direction</h2>
-              <p className="text-gray-600 mb-8">
-                Choose a room, budget, and style for a quick direction.
-              </p>
-
-              <div className="space-y-8">
-                <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-gray-500 mb-3">
-                    Room
-                  </p>
-                  <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-                    {roomOptions.map((option) => {
-                      const Icon = option.icon;
-
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => setSelectedRoom(option.id)}
-                          className={`rounded-2xl border p-4 text-left transition-all ${
-                            selectedRoom === option.id
-                              ? "border-blue-600 bg-blue-50 shadow-sm"
-                              : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
-                          }`}
-                        >
-                          <Icon className="w-5 h-5 text-blue-600 mb-3" />
-                          <div className="font-medium text-gray-900">{option.label}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-gray-500 mb-3">
-                    Budget
-                  </p>
-                  <div className="space-y-3">
-                    {budgetOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => setSelectedBudget(option.id)}
-                        className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${
-                          selectedBudget === option.id
-                            ? "border-blue-600 bg-blue-50 shadow-sm"
-                            : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        <div className="font-medium text-gray-900">{option.label}</div>
-                        <div className="text-sm text-gray-600">{option.range}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-gray-500 mb-3">
-                    Style
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                    {styleOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => setSelectedStyle(option.id)}
-                        className={`rounded-2xl border p-4 text-left transition-all ${
-                          selectedStyle === option.id
-                            ? "border-[#8F775C] bg-[#F7F1EB] shadow-sm"
-                            : "border-gray-200 bg-white text-gray-700 hover:border-[#D9CFC7]"
-                        }`}
-                      >
-                        <div className="font-medium text-gray-900 mb-3">{option.label}</div>
-                        <div className="flex gap-2">
-                          {option.palette.map((color) => (
-                            <div
-                              key={`${option.id}-${color}`}
-                              className="h-7 flex-1 rounded-xl border border-black/5"
-                              style={{ backgroundColor: color }}
-                            />
-                          ))}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {matchingSuggestions.map((suggestion) => (
-                <div
-                  key={suggestion.title}
-                  className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8"
-                >
-                  <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <span className="inline-flex px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
-                      Suggested Concept
-                    </span>
-                    <span className="inline-flex px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm">
-                      Timeline: {suggestion.timeline}
-                    </span>
-                  </div>
-
-                  <h3 className="text-3xl text-gray-900 mb-3">{suggestion.title}</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                    {suggestion.summary}
-                  </p>
-
-                  <div className="space-y-4 mb-8">
-                    {suggestion.outcomes.map((item) => (
-                      <div key={item} className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap gap-4">
-                    <Link
-                      to="/estimate"
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                    >
-                      Turn This Into An Estimate
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50 transition-colors"
-                    >
-                      Save And Discuss Later
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={openLeadCapture}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 transition-colors"
-                    >
-                      Request Moodboard / Consultation
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          )}
-
-          {activeStep === 2 && (
-            <div className="mt-10 flex flex-wrap justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveStep(1)}
-                className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to quiz
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveStep(3)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white hover:bg-[#7A6751] transition-colors"
-              >
-                Continue to moodboards
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section
-        id="featured-moodboards"
-        className={activeStep === 3 ? "py-20" : "hidden"}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 max-w-3xl">
-            <h2 className="text-4xl text-gray-900 mb-4">Ready-Made Moodboards</h2>
-            <p className="text-lg text-gray-600">
-              Moodboards tuned for Hong Kong homes.
-            </p>
-          </div>
-
-          <div className="mb-10 rounded-[2rem] border border-[#D9CFC7] bg-white/80 p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div>
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <span className="px-3 py-1 rounded-full bg-[#EFE9E3] text-[#7A6751] text-sm">
-                    Featured carousel
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {selectedRoomLabel} · {selectedStyleLabel}
-                  </span>
-                </div>
-                <h3 className="text-2xl text-gray-900">
-                  Browse boards before you request a quotation
-                </h3>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleCarouselMove("prev")}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9CFC7] bg-white text-[#6E6258] hover:border-[#C9B59C]"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCarouselMove("next")}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#D9CFC7] bg-white text-[#6E6258] hover:border-[#C9B59C]"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-6">
-              <div
-                key={currentCarouselBoard.id}
-                className="overflow-hidden rounded-[2rem] border border-[#E6DDD5] bg-[#F9F8F6] shadow-[0_24px_70px_rgba(76,61,46,0.08)] animate-reveal-up"
-              >
-                <img
-                  src={currentCarouselBoard.image}
-                  alt={currentCarouselBoard.title}
-                  className="h-[360px] w-full object-cover animate-slow-zoom"
-                />
-                <div className="p-6">
-                  <div className="text-xs uppercase tracking-[0.18em] text-[#7A6751] mb-2">
-                    {currentCarouselBoard.fit}
-                  </div>
-                  <h4 className="text-3xl text-gray-900 mb-3">
-                    {currentCarouselBoard.title}
-                  </h4>
-                  <p className="text-gray-600 leading-relaxed mb-6">
-                    {currentCarouselBoard.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {currentCarouselBoard.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-2 rounded-full bg-[#EFE9E3] text-[#6E6258] text-sm"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleUseMoodboard(currentCarouselBoard)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white hover:bg-[#7A6751] transition-colors"
-                  >
-                    Use This Board
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <div className="mt-6 h-1.5 rounded-full bg-[#EFE9E3] overflow-hidden">
-                    <div
-                      key={currentCarouselBoard.id}
-                      className="h-full rounded-full bg-[#8F775C] animate-carousel-progress"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div
-                key={`${currentCarouselBoard.id}-swatches`}
-                className="rounded-[2rem] border border-[#E6DDD5] bg-white p-6 animate-reveal-up"
-              >
-                <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-4">
-                  Colour codes inside this board
-                </div>
-                <div className="space-y-3 mb-8">
-                  {currentCarouselBoard.swatches.map((swatch) => (
-                    <div
-                      key={`${currentCarouselBoard.id}-${swatch.label}`}
-                      className="flex items-center gap-4 rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] p-3 hover:-translate-y-0.5 transition-transform"
-                    >
-                      <div
-                        className="h-12 w-12 rounded-2xl border border-black/5"
-                        style={{ backgroundColor: swatch.color }}
-                      />
-                      <div>
-                        <div className="text-sm text-gray-500">{swatch.label}</div>
-                        <div className="text-lg text-gray-900">{swatch.color}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="text-sm uppercase tracking-[0.18em] text-[#7A6751] mb-3">
-                  More boards in this room
-                </div>
-                <div className="space-y-3">
-                  {carouselBoards.map((board, index) => (
-                    <button
-                      key={board.id}
-                      type="button"
-                      onClick={() => setCarouselIndex(index)}
-                      className={`w-full text-left rounded-2xl border p-4 transition-all ${
-                        index === carouselIndex
-                          ? "border-[#C9B59C] bg-[#EFE9E3]"
-                          : "border-[#E6DDD5] bg-white hover:border-[#D9CFC7]"
-                      }`}
-                    >
-                      <div className="text-sm text-[#7A6751] mb-1">{board.fit}</div>
-                      <div className="text-lg text-gray-900">{board.title}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-12">
-            {moodboardGroups.map((group) => (
-              <div key={group.roomId}>
-                <div className="flex items-center justify-between gap-4 mb-5">
-                  <h3 className="text-2xl text-gray-900">{group.roomLabel} Boards</h3>
-                  <div className="text-sm text-gray-500">
-                    Ready-made direction for {group.roomLabel.toLowerCase()} enquiries
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                  {group.boards.map((moodboard) => (
-                    <div
-                      key={moodboard.id}
-                      className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden"
-                    >
-                      <div className="relative h-72 overflow-hidden">
-                        <img
-                          src={moodboard.image}
-                          alt={moodboard.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                        <div className="absolute left-6 right-6 bottom-6">
-                          <div className="text-xs uppercase tracking-[0.22em] text-white/75 mb-2">
-                            {moodboard.fit}
-                          </div>
-                          <h4 className="text-3xl text-white">{moodboard.title}</h4>
-                        </div>
-                      </div>
-
-                      <div className="p-6 border-b border-gray-100">
-                        <p className="text-gray-600 leading-relaxed mb-5">
-                          {moodboard.description}
-                        </p>
-
-                        <div className="flex gap-2 mb-5">
-                          {moodboard.swatches.map((swatch) => (
-                            <div
-                              key={`${moodboard.id}-${swatch.label}`}
-                              className="h-12 flex-1 rounded-2xl border border-black/5"
-                              style={{ backgroundColor: swatch.color }}
-                            />
-                          ))}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                          {moodboard.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-3 py-2 rounded-full bg-gray-100 text-gray-700 text-sm"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="p-6">
-                        <div className="space-y-3 mb-6">
-                          {moodboard.materials.map((item) => (
-                            <div key={item} className="flex items-start gap-3">
-                              <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                              <span className="text-gray-700">{item}</span>
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedBudget(option.id);
+                              setShowErrors(false);
+                            }}
+                            className={`w-full rounded-[1.5rem] border p-5 text-left transition-all ${
+                              isSelected
+                                ? "border-[#8B6F4E] bg-[#F4EFEA] shadow-sm"
+                                : "border-[#E8E1D9] bg-white hover:border-[#C6A96E]"
+                            }`}
+                          >
+                            <div className="text-lg">{option.label}</div>
+                            <div className="mt-2 text-sm text-[#6B5E53]">
+                              {option.description}
                             </div>
-                          ))}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleUseMoodboard(moodboard)}
-                          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors"
-                        >
-                          Use This Moodboard
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  ))}
+                  </div>
                 </div>
+
+                {showErrors && (!selectedSpaceSize || !selectedBudget) && (
+                  <p className="mt-5 text-sm text-red-600">
+                    Choose both space size and budget to continue.
+                  </p>
+                )}
               </div>
-            ))}
-          </div>
+            )}
 
-          <div className="mt-10 flex flex-wrap justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveStep(2)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to direction
-            </button>
-            <button
-              type="button"
-              onClick={openLeadCapture}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#8F775C] px-5 py-3 text-white hover:bg-[#7A6751] transition-colors"
-            >
-              Continue to contact
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="lead-capture"
-        className={activeStep === 4 ? "py-20" : "hidden"}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8">
-            <div className="bg-slate-900 text-white rounded-3xl p-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-sm text-slate-100 mb-6">
-                <Lightbulb className="w-4 h-4" />
-                Lead Capture
-              </div>
-              <h2 className="text-3xl mb-4">Turn early interest into a sales conversation.</h2>
-              <p className="text-slate-300 leading-relaxed mb-8">
-                Offer a moodboard or short consultation for visitors not ready for a full estimate.
-              </p>
-              <div className="space-y-4">
-                {[
-                  `Current room focus: ${selectedRoomLabel}`,
-                  `Budget direction: ${selectedBudgetLabel}`,
-                  `Style preference: ${selectedStyleLabel}`,
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-300 mt-0.5 flex-shrink-0" />
-                    <span className="text-slate-100">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8">
-              <h3 className="text-3xl text-gray-900 mb-2">Request Moodboard / Consultation</h3>
-              <p className="text-gray-600 mb-8">
-                Capture the lead and follow up later.
-              </p>
-
-              <form onSubmit={handleLeadSubmit} className="space-y-6">
-                <div className="text-sm text-gray-500">
-                  Required fields are marked with <span className="text-red-500">*</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="lead-name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="lead-name"
-                      type="text"
-                      value={leadForm.name}
-                      onChange={(event) => updateLeadFormField("name", event.target.value)}
-                      className={getLeadFieldClassName(Boolean(leadFormErrors.name))}
-                      placeholder="Client name"
-                    />
-                    {leadFormErrors.name && (
-                      <p className="mt-2 text-sm text-red-600">{leadFormErrors.name}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="lead-email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="lead-email"
-                      type="email"
-                      value={leadForm.email}
-                      onChange={(event) => updateLeadFormField("email", event.target.value)}
-                      className={getLeadFieldClassName(Boolean(leadFormErrors.email))}
-                      placeholder="name@example.com"
-                    />
-                    {leadFormErrors.email && (
-                      <p className="mt-2 text-sm text-red-600">{leadFormErrors.email}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="lead-contact" className="block text-sm font-medium text-gray-700 mb-2">
-                      WhatsApp / Phone <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="lead-contact"
-                      type="text"
-                      value={leadForm.contact}
-                      onChange={(event) => updateLeadFormField("contact", event.target.value)}
-                      className={getLeadFieldClassName(Boolean(leadFormErrors.contact))}
-                      placeholder="+852 ..."
-                    />
-                    {leadFormErrors.contact && (
-                      <p className="mt-2 text-sm text-red-600">{leadFormErrors.contact}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="lead-request-type" className="block text-sm font-medium text-gray-700 mb-2">
-                      Request Type
-                    </label>
-                    <select
-                      id="lead-request-type"
-                      value={leadForm.requestType}
-                      onChange={(event) =>
-                        updateLeadFormField("requestType", event.target.value)
-                      }
-                      className={getLeadFieldClassName(false)}
-                    >
-                      <option value="moodboard">Moodboard</option>
-                      <option value="consultation">Consultation</option>
-                      <option value="both">Both</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="lead-notes" className="block text-sm font-medium text-gray-700 mb-2">
-                    Notes
-                  </label>
-                  <textarea
-                    id="lead-notes"
-                    rows={5}
-                    value={leadForm.notes}
-                    onChange={(event) => updateLeadFormField("notes", event.target.value)}
-                    className="w-full rounded-2xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-600"
-                    placeholder="Any goals, preferred timeline, or property details"
+            {currentStep === 4 && recommendation && (
+              <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+                <div className="overflow-hidden rounded-[1.75rem] border border-[#E8E1D9] bg-[#F9F8F6]">
+                  <img
+                    src={recommendation.style.image}
+                    alt={recommendation.style.label}
+                    className="h-[360px] w-full object-cover animate-slow-zoom"
                   />
                 </div>
 
-                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-sm text-blue-900">
-                  This lead saves the current room, budget, and style choices.
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#8B6F4E]">
+                    <CheckCircle className="h-4 w-4" />
+                    Step 4
+                  </div>
+                  <h2 className="mt-5 text-3xl">
+                    Recommended style: {recommendation.style.label}
+                  </h2>
+                  <p className="mt-4 leading-7 text-[#6B5E53]">
+                    {recommendation.explanation}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <span className="rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#6B5E53]">
+                      {recommendation.intent.label}
+                    </span>
+                    <span className="rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#6B5E53]">
+                      {recommendation.size.label}
+                    </span>
+                    <span className="rounded-full bg-[#F4EFEA] px-4 py-2 text-sm text-[#6B5E53]">
+                      {recommendation.budget.label}
+                    </span>
+                  </div>
+
+                  <div className="mt-8 rounded-[1.5rem] border border-[#E8E1D9] bg-white p-6">
+                    <div className="text-sm uppercase tracking-[0.16em] text-[#8B6F4E]">
+                      Estimated renovation range
+                    </div>
+                    <div className="mt-3 text-3xl">
+                      {formatCurrency(recommendation.estimatedMin)} to{" "}
+                      {formatCurrency(recommendation.estimatedMax)}
+                    </div>
+                    <div className="mt-2 text-sm text-[#6B5E53]">
+                      Early guide only. Final pricing depends on scope, hidden
+                      works, and finish specification.
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <div className="mb-3 text-sm uppercase tracking-[0.16em] text-[#8B6F4E]">
+                      Design highlights
+                    </div>
+                    <div className="space-y-3">
+                      {recommendation.style.highlights.map((highlight) => (
+                        <div key={highlight} className="flex items-start gap-3">
+                          <CheckCircle className="mt-0.5 h-5 w-5 text-[#8B6F4E]" />
+                          <div className="text-[#4B3A2F]">{highlight}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 5 && recommendation && (
+              <div className="grid grid-cols-1 gap-8 xl:grid-cols-[0.95fr_1.05fr]">
+                <div className="rounded-[1.75rem] border border-[#E8E1D9] bg-[#F9F8F6] p-8">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm text-[#8B6F4E]">
+                    <CheckCircle className="h-4 w-4" />
+                    Ready for the next step
+                  </div>
+                  <h2 className="mt-5 text-3xl">Turn this direction into an estimate.</h2>
+                  <p className="mt-4 leading-7 text-[#6B5E53]">
+                    We will carry your style and budget direction into the BOQ
+                    form so the estimate starts from a more realistic brief.
+                  </p>
+
+                  <div className="mt-8 space-y-4 rounded-[1.5rem] border border-[#E8E1D9] bg-white p-6">
+                    <div className="flex items-start justify-between gap-4 border-b border-[#EFE9E3] pb-4">
+                      <div className="text-sm text-[#6B5E53]">Recommended style</div>
+                      <div className="text-right">{recommendation.style.label}</div>
+                    </div>
+                    <div className="flex items-start justify-between gap-4 border-b border-[#EFE9E3] pb-4">
+                      <div className="text-sm text-[#6B5E53]">Space size</div>
+                      <div className="text-right">{recommendation.size.label}</div>
+                    </div>
+                    <div className="flex items-start justify-between gap-4 border-b border-[#EFE9E3] pb-4">
+                      <div className="text-sm text-[#6B5E53]">Budget level</div>
+                      <div className="text-right">{recommendation.budget.label}</div>
+                    </div>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="text-sm text-[#6B5E53]">Estimated range</div>
+                      <div className="text-right">
+                        {formatCurrency(recommendation.estimatedMin)} to{" "}
+                        {formatCurrency(recommendation.estimatedMax)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg"
-                >
-                  Save Lead Request
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          </div>
+                <div className="rounded-[1.75rem] border border-[#E8E1D9] bg-white p-8">
+                  <div className="text-sm uppercase tracking-[0.16em] text-[#8B6F4E]">
+                    Primary action
+                  </div>
+                  <h3 className="mt-4 text-3xl">Get Estimate</h3>
+                  <p className="mt-4 leading-7 text-[#6B5E53]">
+                    Continue to the estimate form with your selected direction
+                    already prepared.
+                  </p>
 
-          <div className="mt-10">
-            <button
-              type="button"
-              onClick={() => setActiveStep(3)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[#D9CFC7] bg-white px-5 py-3 text-[#6E6258] hover:bg-[#F3EEE8] transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to moodboards
-            </button>
+                  <Link
+                    to="/estimate"
+                    onClick={handleEstimateClick}
+                    className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-[#1C1C1C] px-7 py-4 text-white transition-colors hover:bg-[#3A3A3A]"
+                  >
+                    Get Estimate
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(1);
+                      setShowErrors(false);
+                    }}
+                    className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-[#D9D9D6] px-7 py-4 text-[#4B3A2F] transition-colors hover:bg-[#F5F3EF]"
+                  >
+                    Start Again
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[#EFE9E3] pt-6">
+              <button
+                type="button"
+                onClick={goBack}
+                disabled={currentStep === 1}
+                className="inline-flex items-center gap-2 rounded-2xl border border-[#D9D9D6] px-5 py-3 text-[#4B3A2F] transition-colors hover:bg-[#F5F3EF] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </button>
+
+              {currentStep < 5 && (
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[#8B6F4E] px-5 py-3 text-white transition-colors hover:bg-[#6B5E53]"
+                >
+                  {currentStep === 4 ? "Continue to CTA" : "Continue"}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>

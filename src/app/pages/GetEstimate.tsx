@@ -23,6 +23,10 @@ import {
   mapLeadToEstimateDraft,
   updateIdeaStarterLead,
 } from "../lib/leadPipeline";
+import {
+  IDEA_ESTIMATE_DRAFT_KEY,
+  type IdeaEstimateDraft,
+} from "../lib/ideaEstimateDraft";
 
 type EstimateFormData = {
   clientName: string;
@@ -207,23 +211,43 @@ export function GetEstimate() {
 
   useEffect(() => {
     const queuedLead = consumeQueuedLeadForEstimate();
-    if (!queuedLead) {
+    if (queuedLead) {
+      const draft = mapLeadToEstimateDraft(queuedLead);
+      setSelectedLead(queuedLead);
+      setFormData((prev) => ({
+        ...prev,
+        clientName: draft.clientName,
+        clientEmail: draft.clientEmail,
+        scope: draft.renovationType as RenovationScope,
+        pricingTier: draft.materialTier as PricingTier,
+        style: mapLeadStyleToDirection(queuedLead.style),
+        addOns: draft.addOns,
+        projectBrief: draft.projectBrief,
+      }));
+      toast.success("Lead details loaded into the BOQ form.");
       return;
     }
 
-    const draft = mapLeadToEstimateDraft(queuedLead);
-    setSelectedLead(queuedLead);
-    setFormData((prev) => ({
-      ...prev,
-      clientName: draft.clientName,
-      clientEmail: draft.clientEmail,
-      scope: draft.renovationType as RenovationScope,
-      pricingTier: draft.materialTier as PricingTier,
-      style: mapLeadStyleToDirection(queuedLead.style),
-      addOns: draft.addOns,
-      projectBrief: draft.projectBrief,
-    }));
-    toast.success("Lead details loaded into the BOQ form.");
+    const rawIdeaDraft = sessionStorage.getItem(IDEA_ESTIMATE_DRAFT_KEY);
+    if (!rawIdeaDraft) {
+      return;
+    }
+
+    try {
+      const ideaDraft = JSON.parse(rawIdeaDraft) as IdeaEstimateDraft;
+
+      setFormData((prev) => ({
+        ...prev,
+        propertySize: ideaDraft.propertySize,
+        pricingTier: ideaDraft.pricingTier,
+        style: ideaDraft.style,
+        projectBrief: ideaDraft.projectBrief,
+      }));
+      sessionStorage.removeItem(IDEA_ESTIMATE_DRAFT_KEY);
+      toast.success("Ideas preferences loaded into the BOQ form.");
+    } catch {
+      sessionStorage.removeItem(IDEA_ESTIMATE_DRAFT_KEY);
+    }
   }, []);
 
   const handleAddOnToggle = (addOn: string) => {
