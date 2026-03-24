@@ -33,7 +33,7 @@ export function Layout() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      getAppUserFromSupabaseUser(session?.user ?? null).then((appUser) => {
+      getCurrentAppUser().then((appUser) => {
         if (!isMounted) {
           return;
         }

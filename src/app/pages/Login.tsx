@@ -2,7 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LogIn, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { getAppUserFromSupabaseUser } from "../lib/auth";
+import {
+  DEMO_CUSTOMER_ACCOUNT,
+  getAppUserFromSupabaseUser,
+  isDemoCustomerCredentials,
+  signInDemoCustomer,
+} from "../lib/auth";
 import {
   getHashRedirectUrl,
   isSupabaseConfigured,
@@ -58,6 +63,15 @@ export function Login() {
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       toast.error("Please fill in the required fields.");
+      return;
+    }
+
+    if (isDemoCustomerCredentials(formData.email, formData.password)) {
+      setLoading(true);
+      await signInDemoCustomer();
+      setLoading(false);
+      toast.success("Demo customer login successful.");
+      navigate("/track");
       return;
     }
 
@@ -123,13 +137,30 @@ export function Login() {
     toast.success("Confirmation email sent again.");
   };
 
+  const handleUseDemoCustomer = async () => {
+    setFormData({
+      email: DEMO_CUSTOMER_ACCOUNT.email,
+      password: DEMO_CUSTOMER_ACCOUNT.password,
+    });
+    setErrors({});
+    await signInDemoCustomer();
+    toast.success("Demo customer loaded.");
+    navigate("/track");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9F8F6] to-[#EFE9E3] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#F9F8F6] to-[#EFE9E3] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute left-[-4rem] top-10 h-44 w-44 rounded-full bg-[#EFE9E3] blur-3xl opacity-80 animate-drift-slow" />
+        <div className="absolute right-[-2rem] top-24 h-56 w-56 rounded-full bg-[#D9CFC7] blur-3xl opacity-70 animate-drift-delayed" />
+        <div className="absolute bottom-10 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-[#C9B59C]/35 blur-3xl opacity-90 animate-pulse-soft" />
+      </div>
+
+      <div className="relative max-w-md w-full mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-reveal-up">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#C9B59C] to-[#D9CFC7] rounded-lg flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#C9B59C] to-[#D9CFC7] rounded-lg flex items-center justify-center shadow-lg animate-soft-bob">
               <span className="text-[#4F4338] font-bold text-2xl">PY</span>
             </div>
             <span className="font-bold text-2xl text-gray-900">Pydesignhk</span>
@@ -139,7 +170,21 @@ export function Login() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 animate-reveal-up animation-delay-150">
+          <div className="mb-6 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258] animate-warm-glow">
+            <div className="font-medium text-[#4F4338] mb-2">Demo customer account</div>
+            <div>Email: {DEMO_CUSTOMER_ACCOUNT.email}</div>
+            <div>Password: {DEMO_CUSTOMER_ACCOUNT.password}</div>
+            <button
+              type="button"
+              onClick={handleUseDemoCustomer}
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-blue-600 hover:text-blue-700 font-medium shadow-sm transition-transform hover:-translate-y-0.5"
+            >
+              <LogIn className="h-4 w-4" />
+              Use demo customer
+            </button>
+          </div>
+
           {!isSupabaseConfigured && (
             <div className="mb-6 rounded-xl border border-[#D9CFC7] bg-[#F9F8F6] p-4 text-sm text-[#6E6258]">
               Add your Supabase keys to enable login.
