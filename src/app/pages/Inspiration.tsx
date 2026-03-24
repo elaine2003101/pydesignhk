@@ -568,6 +568,10 @@ export function Inspiration() {
   const [selectedStyle, setSelectedStyle] = useState(styleOptions[0].id);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeStep, setActiveStep] = useState<FlowStep>(1);
+  const [maxUnlockedStep, setMaxUnlockedStep] = useState<FlowStep>(1);
+  const [selectedMoodboardId, setSelectedMoodboardId] = useState<string | null>(
+    null,
+  );
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [leadFormErrors, setLeadFormErrors] = useState<LeadFormErrors>({});
   const [leadForm, setLeadForm] = useState<LeadFormState>({
@@ -620,6 +624,9 @@ export function Inspiration() {
     return [...matchingStyleBoards, ...otherBoards];
   }, [selectedRoom, selectedStyle]);
   const currentCarouselBoard = carouselBoards[carouselIndex] ?? presetMoodboards[0];
+  const selectedMoodboard =
+    presetMoodboards.find((moodboard) => moodboard.id === selectedMoodboardId) ??
+    null;
   const quizResult = useMemo(() => {
     const scoreMap = Object.fromEntries(
       styleOptions.map((option) => [option.id, 0]),
@@ -677,6 +684,7 @@ export function Inspiration() {
     };
   }, [quizAnswers, selectedRoom, selectedStyle]);
   const isQuizReady = answeredQuizCount === quizQuestions.length;
+  const progressPercentage = (activeStep / flowSteps.length) * 100;
 
   useEffect(() => {
     setCarouselIndex(0);
@@ -694,7 +702,42 @@ export function Inspiration() {
     return () => window.clearInterval(intervalId);
   }, [carouselBoards.length, selectedRoom, selectedStyle]);
 
+  const getStepLockMessage = (step: FlowStep) => {
+    if (step === 2) {
+      return "Finish the quiz and apply your direction first.";
+    }
+
+    if (step === 3) {
+      return "Apply your quiz result first.";
+    }
+
+    if (step === 4) {
+      return "Pick a moodboard first.";
+    }
+
+    return "Complete the previous step first.";
+  };
+
+  const goToStep = (step: FlowStep) => {
+    if (step <= maxUnlockedStep) {
+      setActiveStep(step);
+      return;
+    }
+
+    toast.error(getStepLockMessage(step));
+  };
+
+  const unlockStep = (step: FlowStep) => {
+    setMaxUnlockedStep((current) => (step > current ? step : current));
+  };
+
   const openLeadCapture = () => {
+    if (!selectedMoodboardId) {
+      toast.error("Pick a moodboard first to unlock the contact step.");
+      return;
+    }
+
+    unlockStep(4);
     setActiveStep(4);
   };
 
@@ -790,6 +833,7 @@ export function Inspiration() {
   const handleUseMoodboard = (moodboard: (typeof presetMoodboards)[number]) => {
     setSelectedRoom(moodboard.room);
     setSelectedStyle(moodboard.style);
+    setSelectedMoodboardId(moodboard.id);
 
     setLeadForm((current) => ({
       ...current,
@@ -799,6 +843,7 @@ export function Inspiration() {
         : `Preferred moodboard: ${moodboard.title} (${moodboard.fit})`,
     }));
 
+    unlockStep(4);
     setActiveStep(4);
 
     toast.success(`${moodboard.title} added to the lead request.`);
@@ -820,13 +865,22 @@ export function Inspiration() {
         : `Quiz result: ${quizResult.board.title} · ${quizResult.board.fit}`,
     }));
 
-    setActiveStep(3);
+    unlockStep(2);
+    setActiveStep(2);
 
-    toast.success("Style quiz applied to your moodboard direction.");
+    toast.success("Quiz result applied. Review the direction before moodboards.");
   };
 
   const handleResetQuiz = () => {
     setQuizAnswers({});
+    setMaxUnlockedStep(1);
+    setActiveStep(1);
+    setSelectedMoodboardId(null);
+  };
+
+  const handleContinueToMoodboards = () => {
+    unlockStep(3);
+    setActiveStep(3);
   };
 
   const handleCarouselMove = (direction: "prev" | "next") => {
@@ -883,26 +937,71 @@ export function Inspiration() {
 
       <section className="border-y border-[#E6DDD5] bg-white/75 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8F775C]">
+                Step {activeStep} of {flowSteps.length}
+              </div>
+              <div className="mt-1 text-2xl text-gray-900">
+                {flowSteps.find((step) => step.id === activeStep)?.label}
+              </div>
+              <div className="mt-1 text-sm text-gray-500">
+                {flowSteps.find((step) => step.id === activeStep)?.summary}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-[#E6DDD5] bg-[#F9F8F6] px-4 py-3 text-sm text-[#6E6258]">
+              {selectedMoodboard
+                ? `Selected board: ${selectedMoodboard.title}`
+                : "Complete each step to unlock the next one."}
+            </div>
+          </div>
+
+          <div className="mb-6 overflow-hidden rounded-full bg-[#EFE9E3]">
+            <div
+              className="h-2 rounded-full bg-[#8F775C] transition-all duration-500"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             {flowSteps.map((step) => {
               const isActive = activeStep === step.id;
               const isPast = activeStep > step.id;
+              const isUnlocked = step.id <= maxUnlockedStep;
 
               return (
                 <button
                   key={step.id}
                   type="button"
-                  onClick={() => setActiveStep(step.id)}
+                  onClick={() => goToStep(step.id)}
+                  aria-disabled={!isUnlocked}
                   className={`rounded-2xl border px-4 py-4 text-left transition-all ${
                     isActive
                       ? "border-[#8F775C] bg-[#F7F1EB] shadow-sm"
                       : isPast
                         ? "border-[#D9CFC7] bg-[#F9F8F6]"
-                        : "border-[#E6DDD5] bg-white hover:border-[#D9CFC7]"
+                        : isUnlocked
+                          ? "border-[#E6DDD5] bg-white hover:border-[#D9CFC7]"
+                          : "border-[#EEE7E0] bg-[#FCFBFA] opacity-70"
                   }`}
                 >
-                  <div className="text-xs uppercase tracking-[0.18em] text-[#8F775C] mb-2">
-                    Step {step.id}
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="text-xs uppercase tracking-[0.18em] text-[#8F775C]">
+                      Step {step.id}
+                    </div>
+                    <span
+                      className={`rounded-full px-2 py-1 text-[11px] uppercase tracking-[0.12em] ${
+                        isPast
+                          ? "bg-[#E8E1D9] text-[#7A6751]"
+                          : isActive
+                            ? "bg-[#8F775C] text-white"
+                            : isUnlocked
+                              ? "bg-[#F3EEE8] text-[#7A6751]"
+                              : "bg-[#F1EEEA] text-[#B0A396]"
+                      }`}
+                    >
+                      {isPast ? "Done" : isActive ? "Current" : isUnlocked ? "Open" : "Locked"}
+                    </span>
                   </div>
                   <div className="text-lg text-gray-900">{step.label}</div>
                   <div className="mt-1 text-sm text-gray-500">{step.summary}</div>
