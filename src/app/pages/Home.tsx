@@ -88,7 +88,7 @@ export function Home() {
     <div className="bg-[#F9F8F6] text-[#1C1C1C]">
       <section className="relative min-h-[88vh] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=80"
+          src="/hero-home-banner.jpg"
           alt="Artistic interior"
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -104,7 +104,9 @@ export function Home() {
             </div>
 
             <h1 className="mt-6 text-5xl leading-[1.02] md:text-7xl animate-reveal-up animation-delay-150">
-              Design your home, step by step
+              Design your home
+              <br />
+              Step by step
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg text-white/85 md:text-xl animate-reveal-up animation-delay-300">
