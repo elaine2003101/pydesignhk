@@ -32,38 +32,6 @@ const quickEntries = [
   },
 ];
 
-const styleCards = [
-  {
-    title: "Japandi",
-    description: "Warm, calm, and softly layered.",
-    image: "/japandi-image.png",
-  },
-  {
-    title: "Modern Minimal",
-    description: "Clean lines with smarter storage.",
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    title: "Modern Luxury",
-    description: "Refined contrast and premium finishes.",
-    image:
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    title: "Scandinavian",
-    description: "Light, airy, and easy to live with.",
-    image:
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    title: "Industrial",
-    description: "Textured, urban, and more graphic.",
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&sat=-15",
-  },
-];
-
 const steps = [
   {
     icon: Palette,
@@ -83,7 +51,40 @@ const steps = [
 ];
 
 export function Home() {
-  const heroBannerSrc = `${import.meta.env.BASE_URL}photo 5.jpg`;
+  const baseURL = import.meta.env.BASE_URL;
+  const heroBannerSrc = `${baseURL}photo 5.jpg`;
+
+  const styleCards = [
+    {
+      title: "Japandi",
+      description: "Warm, calm, and softly layered.",
+      image: `${baseURL}japandi-image.png`,
+    },
+    {
+      title: "Modern Minimal",
+      description: "Clean lines with smarter storage.",
+      image:
+        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "Modern Luxury",
+      description: "Refined contrast and premium finishes.",
+      image:
+        "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "Scandinavian",
+      description: "Light, airy, and easy to live with.",
+      image:
+        "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "Industrial",
+      description: "Textured, urban, and more graphic.",
+      image:
+        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80&sat=-15",
+    },
+  ];
 
   return (
     <div className="bg-[#F9F8F6] text-[#1C1C1C]">
@@ -268,7 +269,7 @@ export function Home() {
                   After
                 </div>
                 <img
-                  src="/japandi-image.png"
+                  src={`${baseURL}japandi-image.png`}
                   alt="After renovation inspiration"
                   className="h-[340px] w-full object-cover"
                 />
