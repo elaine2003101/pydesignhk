@@ -63,20 +63,17 @@ export function Home() {
     {
       title: "Modern Minimal",
       description: "Clean lines with smarter storage.",
-      image:
-        "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+      image: `${baseURL}Modern-Minimal-image.png`,
     },
     {
       title: "Modern Luxury",
       description: "Refined contrast and premium finishes.",
-      image:
-        "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+      image: `${baseURL}modern-luxury-image.png`,
     },
     {
       title: "Scandinavian",
       description: "Light, airy, and easy to live with.",
-      image:
-        "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
+      image: `${baseURL}scandinavian-image.png`,
     },
     {
       title: "Industrial",
