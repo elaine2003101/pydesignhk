@@ -36,8 +36,7 @@ const styleCards = [
   {
     title: "Japandi",
     description: "Warm, calm, and softly layered.",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    image: "/japandi-image.png",
   },
   {
     title: "Modern Minimal",
@@ -269,7 +268,7 @@ export function Home() {
                   After
                 </div>
                 <img
-                  src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80"
+                  src="/japandi-image.png"
                   alt="After renovation inspiration"
                   className="h-[340px] w-full object-cover"
                 />
