@@ -255,7 +255,7 @@ export function Home() {
                   Before
                 </div>
                 <img
-                  src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80&sat=-50"
+                  src={`${baseURL}japandi-image.png`}
                   alt="Before renovation inspiration"
                   className="h-[340px] w-full object-cover"
                 />
@@ -266,7 +266,7 @@ export function Home() {
                   After
                 </div>
                 <img
-                  src={`${baseURL}japandi-image.png`}
+                  src={`${baseURL}afterimage.png`}
                   alt="After renovation inspiration"
                   className="h-[340px] w-full object-cover"
                 />
