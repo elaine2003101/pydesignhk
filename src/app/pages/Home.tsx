@@ -84,7 +84,7 @@ const steps = [
 ];
 
 export function Home() {
-  const heroBannerSrc = `${import.meta.env.BASE_URL}photo 5.jpg`;
+  const heroBannerSrc = `${import.meta.env.BASE_URL}hero-home-banner.jpeg`;
 
   return (
     <div className="bg-[#F9F8F6] text-[#1C1C1C]">
