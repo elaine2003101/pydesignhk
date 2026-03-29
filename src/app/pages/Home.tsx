@@ -266,7 +266,7 @@ export function Home() {
                   After
                 </div>
                 <img
-                  src={`${baseURL}afterimage.png`}
+                  src={`${baseURL}afterimage.jpg`}
                   alt="After renovation inspiration"
                   className="h-[340px] w-full object-cover"
                 />
